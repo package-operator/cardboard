@@ -99,6 +99,7 @@ func NewCluster(workDir string, opts ...ClusterOption) (*Cluster, error) {
 	for _, opt := range opts {
 		opt.ApplyToClusterConfig(&c.ClusterConfig)
 	}
+	c.ClusterConfig.Default()
 	// Apply schemes from Options
 	if c.SchemeBuilder != nil {
 		if err := c.SchemeBuilder.AddToScheme(c.Scheme); err != nil {
