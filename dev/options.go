@@ -106,3 +106,9 @@ type WithClusterOptions []ClusterOption
 func (opts WithClusterOptions) ApplyToEnvironmentConfig(c *EnvironmentConfig) {
 	c.ClusterOptions = opts
 }
+
+type WithKubeconfigPath string
+
+func (kubeconfig WithKubeconfigPath) ApplyToClusterConfig(c *ClusterConfig) {
+	c.Kubeconfig = string(kubeconfig)
+}

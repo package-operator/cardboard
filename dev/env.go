@@ -115,7 +115,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 		if err := env.execKindCommand(
 			ctx, os.Stdout, os.Stderr,
 			"create", "cluster",
-			"--kubeconfig="+env.Cluster.Kubeconfig, "--name="+env.Name,
+			"--kubeconfig="+env.Cluster.KubeconfigPath(), "--name="+env.Name,
 			"--config="+kindConfigPath,
 		); err != nil {
 			return fmt.Errorf("creating kind cluster: %w", err)
@@ -147,7 +147,7 @@ func (env *Environment) Destroy(ctx context.Context) error {
 	if err := env.execKindCommand(
 		ctx, os.Stdout, os.Stderr,
 		"delete", "cluster",
-		"--kubeconfig="+env.Cluster.Kubeconfig, "--name="+env.Name,
+		"--kubeconfig="+env.Cluster.KubeconfigPath(), "--name="+env.Name,
 	); err != nil {
 		return fmt.Errorf("deleting kind cluster: %w", err)
 	}

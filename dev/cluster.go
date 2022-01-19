@@ -32,6 +32,10 @@ type ClusterConfig struct {
 	WaitOptions   []WaitOption
 	NewHelm       NewHelmFunc
 	HelmOptions   []HelmOption
+
+	WorkDir string
+	// Path to the kubeconfig of the cluster
+	Kubeconfig string
 }
 
 type NewWaiterFunc func(
@@ -57,6 +61,9 @@ func (c *ClusterConfig) Default() {
 	if c.WaitOptions == nil {
 		c.WaitOptions = append(c.WaitOptions, WithLogger(c.Logger))
 	}
+	if c.Kubeconfig == "" {
+		c.Kubeconfig = path.Join(c.WorkDir, "kubeconfig.yaml")
+	}
 }
 
 type ClusterOption interface {
@@ -70,9 +77,6 @@ type Cluster struct {
 	CtrlClient client.Client
 	Waiter     *Waiter
 	Helm       *Helm
-	WorkDir    string
-	// Path to the kubeconfig of the cluster
-	Kubeconfig string
 
 	config ClusterConfig
 }
@@ -80,9 +84,10 @@ type Cluster struct {
 // Creates a new Cluster object to interact with a Kubernetes cluster.
 func NewCluster(workDir string, opts ...ClusterOption) (*Cluster, error) {
 	c := &Cluster{
-		Scheme:     runtime.NewScheme(),
-		WorkDir:    workDir,
-		Kubeconfig: path.Join(workDir, "kubeconfig.yaml"),
+		Scheme: runtime.NewScheme(),
+		config: ClusterConfig{
+			WorkDir: workDir,
+		},
 	}
 
 	// Add default schemes
@@ -103,7 +108,7 @@ func NewCluster(workDir string, opts ...ClusterOption) (*Cluster, error) {
 
 	var err error
 	// Create RestConfig
-	c.RestConfig, err = clientcmd.BuildConfigFromFlags("", c.Kubeconfig)
+	c.RestConfig, err = clientcmd.BuildConfigFromFlags("", c.config.Kubeconfig)
 	if err != nil {
 		return nil, fmt.Errorf("getting rest.Config from kubeconfig: %w", err)
 	}
@@ -117,9 +122,14 @@ func NewCluster(workDir string, opts ...ClusterOption) (*Cluster, error) {
 	}
 
 	c.Waiter = c.config.NewWaiter(c.CtrlClient, c.Scheme, c.config.WaitOptions...)
-	c.Helm = c.config.NewHelm(c.WorkDir, c.Kubeconfig, c.config.HelmOptions...)
+	c.Helm = c.config.NewHelm(c.config.WorkDir, c.config.Kubeconfig, c.config.HelmOptions...)
 
 	return c, nil
+}
+
+// Return the path to the kubeconfig for this cluster.
+func (c *Cluster) KubeconfigPath() string {
+	return c.config.Kubeconfig
 }
 
 // Load kube objects from a list of http urls,
