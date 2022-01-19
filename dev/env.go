@@ -57,7 +57,7 @@ type Environment struct {
 	// Temporary files/kubeconfig etc. will be stored here.
 	WorkDir string
 	Cluster *Cluster
-	config  EnvironmentConfig
+	EnvironmentConfig
 }
 
 // Creates a new development environment.
@@ -67,9 +67,9 @@ func NewEnvironment(name, workDir string, opts ...EnvironmentOption) *Environmen
 		WorkDir: workDir,
 	}
 	for _, opt := range opts {
-		opt.ApplyToEnvironmentConfig(&env.config)
+		opt.ApplyToEnvironmentConfig(&env.EnvironmentConfig)
 	}
-	env.config.Default()
+	env.EnvironmentConfig.Default()
 	return env
 }
 
@@ -115,7 +115,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 		if err := env.execKindCommand(
 			ctx, os.Stdout, os.Stderr,
 			"create", "cluster",
-			"--kubeconfig="+env.Cluster.KubeconfigPath(), "--name="+env.Name,
+			"--kubeconfig="+env.Cluster.Kubeconfig, "--name="+env.Name,
 			"--config="+kindConfigPath,
 		); err != nil {
 			return fmt.Errorf("creating kind cluster: %w", err)
@@ -124,7 +124,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 
 	// Create _all_ the clients
 	cluster, err := NewCluster(
-		env.WorkDir, env.config.ClusterOptions...)
+		env.WorkDir, env.ClusterOptions...)
 	if err != nil {
 		return fmt.Errorf("creating k8s clients: %w", err)
 	}
@@ -132,7 +132,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 
 	// Run ClusterInitializers
 	if createCluster {
-		for _, initializer := range env.config.ClusterInitializers {
+		for _, initializer := range env.ClusterInitializers {
 			if err := initializer.Init(ctx, cluster); err != nil {
 				return fmt.Errorf("running cluster initializer: %w", err)
 			}
@@ -147,7 +147,7 @@ func (env *Environment) Destroy(ctx context.Context) error {
 	if err := env.execKindCommand(
 		ctx, os.Stdout, os.Stderr,
 		"delete", "cluster",
-		"--kubeconfig="+env.Cluster.KubeconfigPath(), "--name="+env.Name,
+		"--kubeconfig="+env.Cluster.Kubeconfig, "--name="+env.Name,
 	); err != nil {
 		return fmt.Errorf("deleting kind cluster: %w", err)
 	}
@@ -173,7 +173,7 @@ func (env *Environment) execKindCommand(
 		ctx, "kind", args...,
 	)
 	kindCmd.Env = os.Environ()
-	if env.config.ContainerRuntime == "podman" {
+	if env.ContainerRuntime == "podman" {
 		kindCmd.Env = append(kindCmd.Env, "KIND_EXPERIMENTAL_PROVIDER=podman")
 	}
 	kindCmd.Stdout = stdout

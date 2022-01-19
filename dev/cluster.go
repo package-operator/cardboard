@@ -78,14 +78,14 @@ type Cluster struct {
 	Waiter     *Waiter
 	Helm       *Helm
 
-	config ClusterConfig
+	ClusterConfig
 }
 
 // Creates a new Cluster object to interact with a Kubernetes cluster.
 func NewCluster(workDir string, opts ...ClusterOption) (*Cluster, error) {
 	c := &Cluster{
 		Scheme: runtime.NewScheme(),
-		config: ClusterConfig{
+		ClusterConfig: ClusterConfig{
 			WorkDir: workDir,
 		},
 	}
@@ -97,18 +97,18 @@ func NewCluster(workDir string, opts ...ClusterOption) (*Cluster, error) {
 
 	// Apply Options
 	for _, opt := range opts {
-		opt.ApplyToClusterConfig(&c.config)
+		opt.ApplyToClusterConfig(&c.ClusterConfig)
 	}
 	// Apply schemes from Options
-	if c.config.SchemeBuilder != nil {
-		if err := c.config.SchemeBuilder.AddToScheme(c.Scheme); err != nil {
+	if c.SchemeBuilder != nil {
+		if err := c.SchemeBuilder.AddToScheme(c.Scheme); err != nil {
 			return nil, fmt.Errorf("adding to scheme: %w", err)
 		}
 	}
 
 	var err error
 	// Create RestConfig
-	c.RestConfig, err = clientcmd.BuildConfigFromFlags("", c.config.Kubeconfig)
+	c.RestConfig, err = clientcmd.BuildConfigFromFlags("", c.Kubeconfig)
 	if err != nil {
 		return nil, fmt.Errorf("getting rest.Config from kubeconfig: %w", err)
 	}
@@ -121,15 +121,10 @@ func NewCluster(workDir string, opts ...ClusterOption) (*Cluster, error) {
 		return nil, fmt.Errorf("creating new ctrl client: %w", err)
 	}
 
-	c.Waiter = c.config.NewWaiter(c.CtrlClient, c.Scheme, c.config.WaitOptions...)
-	c.Helm = c.config.NewHelm(c.config.WorkDir, c.config.Kubeconfig, c.config.HelmOptions...)
+	c.Waiter = c.NewWaiter(c.CtrlClient, c.Scheme, c.WaitOptions...)
+	c.Helm = c.NewHelm(c.WorkDir, c.Kubeconfig, c.HelmOptions...)
 
 	return c, nil
-}
-
-// Return the path to the kubeconfig for this cluster.
-func (c *Cluster) KubeconfigPath() string {
-	return c.config.Kubeconfig
 }
 
 // Load kube objects from a list of http urls,

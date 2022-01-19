@@ -49,7 +49,7 @@ type WaitOption interface {
 type Waiter struct {
 	client client.Client
 	scheme *runtime.Scheme
-	c      WaiterConfig
+	WaiterConfig
 }
 
 // Creates a new Waiter instance.
@@ -62,9 +62,9 @@ func NewWaiter(
 	}
 
 	for _, opt := range defaultOpts {
-		opt.ApplyToWaiterConfig(&w.c)
+		opt.ApplyToWaiterConfig(&w.WaiterConfig)
 	}
-	w.c.Default()
+	w.WaiterConfig.Default()
 	return w
 }
 
@@ -126,7 +126,7 @@ func (w *Waiter) WaitForObject(
 	checkFn func(obj client.Object) (done bool, err error),
 	opts ...WaitOption,
 ) error {
-	c := w.c
+	c := w.WaiterConfig
 	for _, opt := range opts {
 		opt.ApplyToWaiterConfig(&c)
 	}

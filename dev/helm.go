@@ -10,6 +10,8 @@ import (
 )
 
 type HelmConfig struct {
+	WorkDir        string
+	Kubeconfig     string
 	Stdout, Stderr io.Writer
 }
 
@@ -27,20 +29,20 @@ type HelmOption interface {
 }
 
 type Helm struct {
-	workDir    string
-	kubeconfig string
-	config     HelmConfig
+	HelmConfig
 }
 
 func NewHelm(workDir, kubeconfig string, opts ...HelmOption) *Helm {
 	h := &Helm{
-		workDir:    workDir,
-		kubeconfig: kubeconfig,
+		HelmConfig: HelmConfig{
+			WorkDir:    workDir,
+			Kubeconfig: kubeconfig,
+		},
 	}
 	for _, opt := range opts {
-		opt.ApplyToHelmConfig(&h.config)
+		opt.ApplyToHelmConfig(&h.HelmConfig)
 	}
-	h.config.Default()
+	h.HelmConfig.Default()
 	return h
 }
 
@@ -95,9 +97,9 @@ func (h *Helm) HelmInstall(
 func (h *Helm) execHelmCommand(
 	ctx context.Context, stdout, stderr io.Writer, args ...string,
 ) error {
-	helmCacheDir := path.Join(h.workDir, "helm/cache")
-	helmConfigDir := path.Join(h.workDir, "helm/config")
-	helmDataDir := path.Join(h.workDir, "helm/data")
+	helmCacheDir := path.Join(h.WorkDir, "helm/cache")
+	helmConfigDir := path.Join(h.WorkDir, "helm/config")
+	helmDataDir := path.Join(h.WorkDir, "helm/data")
 
 	for _, dir := range []string{helmCacheDir, helmConfigDir, helmDataDir} {
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
@@ -111,7 +113,7 @@ func (h *Helm) execHelmCommand(
 	helmCmd.Env = os.Environ()
 	helmCmd.Env = append(
 		helmCmd.Env,
-		"KUBECONFIG="+h.kubeconfig,
+		"KUBECONFIG="+h.Kubeconfig,
 		"HELM_CACHE_HOME="+helmCacheDir,
 		"HELM_CONFIG_HOME="+helmConfigDir,
 		"HELM_DATA_HOME="+helmDataDir,
