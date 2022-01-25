@@ -2,6 +2,7 @@ package dev
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -13,6 +14,41 @@ import (
 
 	aoapis "github.com/openshift/addon-operator/apis"
 )
+
+func TestWaiterConfig_Default(t *testing.T) {
+	var c WaiterConfig
+	c.Default()
+
+	assertConfigDefaults(t, c)
+}
+
+func TestWaiter_NewWaiter(t *testing.T) {
+	t.Run("defaults", func(t *testing.T) {
+		w := NewWaiter(nil, nil)
+
+		assertConfigDefaults(t, w.config)
+	})
+
+	t.Run("custom options", func(t *testing.T) {
+		interval := 7 * time.Second
+		timeout := 8 * time.Second
+
+		w := NewWaiter(nil, nil,
+			WithInterval(interval),
+			WithTimeout(timeout))
+
+		assert.Equal(t, interval, w.config.Interval)
+		assert.Equal(t, timeout, w.config.Timeout)
+		assert.NotNil(t, w.config.Logger)
+	})
+}
+
+func assertConfigDefaults(t *testing.T, c WaiterConfig) {
+	t.Helper()
+	assert.Equal(t, WaiterDefaultInterval, c.Interval)
+	assert.Equal(t, WaiterDefaultTimeout, c.Timeout)
+	assert.NotNil(t, c.Logger)
+}
 
 func Test_checkObjectCondition(t *testing.T) {
 	scheme := runtime.NewScheme()

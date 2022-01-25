@@ -32,6 +32,8 @@ type ClusterConfig struct {
 	WaitOptions   []WaitOption
 	NewHelm       NewHelmFunc
 	HelmOptions   []HelmOption
+	NewRestConfig NewRestConfigFunc
+	NewCtrlClient NewCtrlClientFunc
 
 	WorkDir string
 	// Path to the kubeconfig of the cluster
@@ -48,6 +50,16 @@ type NewHelmFunc func(
 	opts ...HelmOption,
 ) *Helm
 
+type NewRestConfigFunc func(kubeconfig string) (*rest.Config, error)
+
+func DefaultNewRestConfig(kubeconfig string) (*rest.Config, error) {
+	return clientcmd.BuildConfigFromFlags("", kubeconfig)
+}
+
+type NewCtrlClientFunc func(c *rest.Config, opts client.Options) (client.Client, error)
+
+var DefaultNewCtrlClientFunc = client.New
+
 func (c *ClusterConfig) Default() {
 	if c.Logger.GetSink() == nil {
 		c.Logger = logr.Discard()
@@ -58,12 +70,22 @@ func (c *ClusterConfig) Default() {
 	if c.NewHelm == nil {
 		c.NewHelm = NewHelm
 	}
-	if c.WaitOptions == nil {
-		c.WaitOptions = append(c.WaitOptions, WithLogger(c.Logger))
-	}
 	if c.Kubeconfig == "" {
 		c.Kubeconfig = path.Join(c.WorkDir, "kubeconfig.yaml")
 	}
+	if c.NewRestConfig == nil {
+		c.NewRestConfig = DefaultNewRestConfig
+	}
+	if c.NewCtrlClient == nil {
+		c.NewCtrlClient = DefaultNewCtrlClientFunc
+	}
+
+	// Prepend logger option to always default to the same logger for subcomponents.
+	// Users can explicitly disable sub component logging by using:
+	// WithLogger(logr.Discard()).
+	c.WaitOptions = append([]WaitOption{
+		WithLogger(c.Logger),
+	}, c.WaitOptions...)
 }
 
 type ClusterOption interface {
@@ -78,14 +100,14 @@ type Cluster struct {
 	Waiter     *Waiter
 	Helm       *Helm
 
-	ClusterConfig
+	config ClusterConfig
 }
 
 // Creates a new Cluster object to interact with a Kubernetes cluster.
 func NewCluster(workDir string, opts ...ClusterOption) (*Cluster, error) {
 	c := &Cluster{
 		Scheme: runtime.NewScheme(),
-		ClusterConfig: ClusterConfig{
+		config: ClusterConfig{
 			WorkDir: workDir,
 		},
 	}
@@ -97,35 +119,45 @@ func NewCluster(workDir string, opts ...ClusterOption) (*Cluster, error) {
 
 	// Apply Options
 	for _, opt := range opts {
-		opt.ApplyToClusterConfig(&c.ClusterConfig)
+		opt.ApplyToClusterConfig(&c.config)
 	}
-	c.ClusterConfig.Default()
+	c.config.Default()
+
 	// Apply schemes from Options
-	if c.SchemeBuilder != nil {
-		if err := c.SchemeBuilder.AddToScheme(c.Scheme); err != nil {
+	if c.config.SchemeBuilder != nil {
+		if err := c.config.SchemeBuilder.AddToScheme(c.Scheme); err != nil {
 			return nil, fmt.Errorf("adding to scheme: %w", err)
 		}
 	}
 
 	var err error
 	// Create RestConfig
-	c.RestConfig, err = clientcmd.BuildConfigFromFlags("", c.Kubeconfig)
+	c.RestConfig, err = c.config.NewRestConfig(c.config.Kubeconfig)
 	if err != nil {
 		return nil, fmt.Errorf("getting rest.Config from kubeconfig: %w", err)
 	}
 
 	// Create Controller Runtime Client
-	c.CtrlClient, err = client.New(c.RestConfig, client.Options{
+	c.CtrlClient, err = c.config.NewCtrlClient(c.RestConfig, client.Options{
 		Scheme: c.Scheme,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("creating new ctrl client: %w", err)
 	}
 
-	c.Waiter = c.NewWaiter(c.CtrlClient, c.Scheme, c.WaitOptions...)
-	c.Helm = c.NewHelm(c.WorkDir, c.Kubeconfig, c.HelmOptions...)
+	c.Waiter = c.config.NewWaiter(
+		c.CtrlClient, c.Scheme,
+		c.config.WaitOptions...)
+	c.Helm = c.config.NewHelm(
+		workDir, c.config.Kubeconfig,
+		c.config.HelmOptions...)
 
 	return c, nil
+}
+
+// Returns the path to the kubeconfig of the cluster.
+func (c *Cluster) Kubeconfig() string {
+	return c.config.Kubeconfig
 }
 
 // Load kube objects from a list of http urls,

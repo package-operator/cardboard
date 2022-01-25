@@ -18,7 +18,7 @@ type EnvironmentConfig struct {
 	// Cluster initializers prepare a cluster for use.
 	ClusterInitializers []ClusterInitializer
 	// Container runtime to use
-	ContainerRuntime string
+	ContainerRuntime ContainerRuntime
 	Logger           logr.Logger
 	NewCluster       NewClusterFunc
 	ClusterOptions   []ClusterOption
@@ -27,7 +27,7 @@ type EnvironmentConfig struct {
 // Apply default configuration.
 func (c *EnvironmentConfig) Default() {
 	if len(c.ContainerRuntime) == 0 {
-		c.ContainerRuntime = "podman"
+		c.ContainerRuntime = Podman
 	}
 	if c.Logger.GetSink() == nil {
 		c.Logger = logr.Discard()
@@ -35,9 +35,13 @@ func (c *EnvironmentConfig) Default() {
 	if c.NewCluster == nil {
 		c.NewCluster = NewCluster
 	}
-	if c.ClusterOptions == nil {
-		c.ClusterOptions = append(c.ClusterOptions, WithLogger(c.Logger))
-	}
+
+	// Prepend logger option to always default to the same logger for subcomponents.
+	// Users can explicitly disable sub component logging by using:
+	// WithLogger(logr.Discard()).
+	c.ClusterOptions = append([]ClusterOption{
+		WithLogger(c.Logger),
+	}, c.ClusterOptions...)
 }
 
 type EnvironmentOption interface {
@@ -57,7 +61,7 @@ type Environment struct {
 	// Temporary files/kubeconfig etc. will be stored here.
 	WorkDir string
 	Cluster *Cluster
-	EnvironmentConfig
+	config  EnvironmentConfig
 }
 
 // Creates a new development environment.
@@ -67,9 +71,9 @@ func NewEnvironment(name, workDir string, opts ...EnvironmentOption) *Environmen
 		WorkDir: workDir,
 	}
 	for _, opt := range opts {
-		opt.ApplyToEnvironmentConfig(&env.EnvironmentConfig)
+		opt.ApplyToEnvironmentConfig(&env.config)
 	}
-	env.EnvironmentConfig.Default()
+	env.config.Default()
 	return env
 }
 
@@ -115,7 +119,8 @@ apiVersion: kind.x-k8s.io/v1alpha4
 		if err := env.execKindCommand(
 			ctx, os.Stdout, os.Stderr,
 			"create", "cluster",
-			"--kubeconfig="+env.Cluster.Kubeconfig, "--name="+env.Name,
+			"--kubeconfig="+env.Cluster.Kubeconfig(),
+			"--name="+env.Name,
 			"--config="+kindConfigPath,
 		); err != nil {
 			return fmt.Errorf("creating kind cluster: %w", err)
@@ -123,8 +128,8 @@ apiVersion: kind.x-k8s.io/v1alpha4
 	}
 
 	// Create _all_ the clients
-	cluster, err := NewCluster(
-		env.WorkDir, env.ClusterOptions...)
+	cluster, err := env.config.NewCluster(
+		env.WorkDir, env.config.ClusterOptions...)
 	if err != nil {
 		return fmt.Errorf("creating k8s clients: %w", err)
 	}
@@ -132,7 +137,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 
 	// Run ClusterInitializers
 	if createCluster {
-		for _, initializer := range env.ClusterInitializers {
+		for _, initializer := range env.config.ClusterInitializers {
 			if err := initializer.Init(ctx, cluster); err != nil {
 				return fmt.Errorf("running cluster initializer: %w", err)
 			}
@@ -147,7 +152,8 @@ func (env *Environment) Destroy(ctx context.Context) error {
 	if err := env.execKindCommand(
 		ctx, os.Stdout, os.Stderr,
 		"delete", "cluster",
-		"--kubeconfig="+env.Cluster.Kubeconfig, "--name="+env.Name,
+		"--kubeconfig="+env.Cluster.Kubeconfig(),
+		"--name="+env.Name,
 	); err != nil {
 		return fmt.Errorf("deleting kind cluster: %w", err)
 	}
@@ -173,7 +179,7 @@ func (env *Environment) execKindCommand(
 		ctx, "kind", args...,
 	)
 	kindCmd.Env = os.Environ()
-	if env.ContainerRuntime == "podman" {
+	if env.config.ContainerRuntime == "podman" {
 		kindCmd.Env = append(kindCmd.Env, "KIND_EXPERIMENTAL_PROVIDER=podman")
 	}
 	kindCmd.Stdout = stdout

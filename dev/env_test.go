@@ -1,6 +1,11 @@
 package dev
 
-import "github.com/go-logr/logr"
+import (
+	"testing"
+
+	"github.com/go-logr/logr"
+	"github.com/stretchr/testify/assert"
+)
 
 const (
 	olmVersion = "0.19.1"
@@ -41,4 +46,26 @@ func ExampleEnvironment() {
 			},
 		},
 	)
+}
+
+func TestEnvironmentConfig_Default(t *testing.T) {
+	var c EnvironmentConfig
+	c.Default()
+
+	assertEnvironmentConfigDefaults(t, c)
+}
+
+func TestEnvironment_NewEnvironment(t *testing.T) {
+	e := NewEnvironment("cheese", "./cheese")
+
+	assertEnvironmentConfigDefaults(t, e.config)
+}
+
+func assertEnvironmentConfigDefaults(t *testing.T, c EnvironmentConfig) {
+	t.Helper()
+
+	assert.Equal(t, Podman, c.ContainerRuntime)
+	assert.NotNil(t, c.Logger)
+	assert.NotNil(t, c.NewCluster)
+	assert.Equal(t, []ClusterOption{WithLogger(c.Logger)}, c.ClusterOptions)
 }

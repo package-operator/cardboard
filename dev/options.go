@@ -92,7 +92,7 @@ const (
 type WithContainerRuntime ContainerRuntime
 
 func (cr WithContainerRuntime) ApplyToEnvironmentConfig(c *EnvironmentConfig) {
-	c.ContainerRuntime = string(cr)
+	c.ContainerRuntime = ContainerRuntime(cr)
 }
 
 type WithNewClusterFunc NewClusterFunc
@@ -111,4 +111,16 @@ type WithKubeconfigPath string
 
 func (kubeconfig WithKubeconfigPath) ApplyToClusterConfig(c *ClusterConfig) {
 	c.Kubeconfig = string(kubeconfig)
+}
+
+type WithNewRestConfigFunc NewRestConfigFunc
+
+func (f WithNewRestConfigFunc) ApplyToClusterConfig(c *ClusterConfig) {
+	c.NewRestConfig = NewRestConfigFunc(f)
+}
+
+type WithNewCtrlClientFunc NewCtrlClientFunc
+
+func (f WithNewCtrlClientFunc) ApplyToClusterConfig(c *ClusterConfig) {
+	c.NewCtrlClient = NewCtrlClientFunc(f)
 }

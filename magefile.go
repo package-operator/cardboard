@@ -57,7 +57,7 @@ type Test mg.Namespace
 func (Test) Unit() error {
 	return sh.RunWithV(map[string]string{
 		"CGO_ENABLED": "1",
-	}, "go", "test", "-v", "-race", "./dev/...", "./cmd/...", "./magedeps/...")
+	}, "go", "test", "-cover", "-v", "-race", "./dev/...", "./cmd/...", "./magedeps/...")
 }
 
 // Lints the source code.
