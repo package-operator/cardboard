@@ -2,6 +2,11 @@ package dev
 
 import (
 	"context"
+	"fmt"
+
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Load objects from given folder paths and applies them into the cluster.
@@ -41,6 +46,15 @@ func (h ClusterHelmInstall) Init(
 	}
 	if err := cluster.Helm.HelmRepoUpdate(ctx); err != nil {
 		return err
+	}
+
+	ns := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: h.Namespace,
+		},
+	}
+	if err := cluster.CtrlClient.Create(ctx, ns); err != nil && !errors.IsAlreadyExists(err) {
+		return fmt.Errorf("creating namespace for helm: %w", err)
 	}
 
 	return cluster.Helm.HelmInstall(ctx, cluster, h.RepoName, h.PackageName, h.ReleaseName, h.Namespace, h.SetVars)

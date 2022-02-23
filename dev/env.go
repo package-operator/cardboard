@@ -99,9 +99,10 @@ apiVersion: kind.x-k8s.io/v1alpha4
 		return fmt.Errorf("creating workdir: %w", err)
 	}
 
-	kindConfigPath := path.Join(env.WorkDir, "/kind.yaml")
+	kubeconfigPath := path.Join(env.WorkDir, "kubeconfig.yaml")
+	kindconfigPath := path.Join(env.WorkDir, "/kind.yaml")
 	if err := ioutil.WriteFile(
-		kindConfigPath, []byte(kindConfig), os.ModePerm); err != nil {
+		kindconfigPath, []byte(kindConfig), os.ModePerm); err != nil {
 		return fmt.Errorf("creating kind cluster config: %w", err)
 	}
 
@@ -113,15 +114,14 @@ apiVersion: kind.x-k8s.io/v1alpha4
 
 	// Only create cluster if it is not already there.
 	createCluster := !strings.Contains(checkOutput.String(), env.Name+"\n")
-
 	if createCluster {
 		// Create cluster
 		if err := env.execKindCommand(
 			ctx, os.Stdout, os.Stderr,
 			"create", "cluster",
-			"--kubeconfig="+env.Cluster.Kubeconfig(),
+			"--kubeconfig="+kubeconfigPath,
 			"--name="+env.Name,
-			"--config="+kindConfigPath,
+			"--config="+kindconfigPath,
 		); err != nil {
 			return fmt.Errorf("creating kind cluster: %w", err)
 		}
@@ -129,7 +129,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 
 	// Create _all_ the clients
 	cluster, err := env.config.NewCluster(
-		env.WorkDir, env.config.ClusterOptions...)
+		env.WorkDir, append(env.config.ClusterOptions, WithKubeconfigPath(kubeconfigPath))...)
 	if err != nil {
 		return fmt.Errorf("creating k8s clients: %w", err)
 	}
@@ -152,7 +152,7 @@ func (env *Environment) Destroy(ctx context.Context) error {
 	if err := env.execKindCommand(
 		ctx, os.Stdout, os.Stderr,
 		"delete", "cluster",
-		"--kubeconfig="+env.Cluster.Kubeconfig(),
+		"--kubeconfig="+path.Join(env.WorkDir, "kubeconfig.yaml"),
 		"--name="+env.Name,
 	); err != nil {
 		return fmt.Errorf("deleting kind cluster: %w", err)
@@ -175,6 +175,7 @@ func (env *Environment) LoadImageFromTar(
 
 func (env *Environment) execKindCommand(
 	ctx context.Context, stdout, stderr io.Writer, args ...string) error {
+	env.config.Logger.Info("exec: kind " + strings.Join(args, " "))
 	kindCmd := exec.CommandContext( //nolint:gosec
 		ctx, "kind", args...,
 	)
