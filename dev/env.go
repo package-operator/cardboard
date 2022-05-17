@@ -11,8 +11,6 @@ import (
 	"os/exec"
 	"path"
 	"strings"
-
-	"github.com/go-logr/logr"
 )
 
 type EnvironmentConfig struct {
@@ -20,7 +18,6 @@ type EnvironmentConfig struct {
 	ClusterInitializers []ClusterInitializer
 	// Container runtime to use
 	ContainerRuntime ContainerRuntime
-	Logger           logr.Logger
 	NewCluster       NewClusterFunc
 	ClusterOptions   []ClusterOption
 }
@@ -30,19 +27,9 @@ func (c *EnvironmentConfig) Default() {
 	if len(c.ContainerRuntime) == 0 {
 		c.ContainerRuntime = ContainerRuntimeAuto
 	}
-	if c.Logger.GetSink() == nil {
-		c.Logger = logr.Discard()
-	}
 	if c.NewCluster == nil {
 		c.NewCluster = NewCluster
 	}
-
-	// Prepend logger option to always default to the same logger for subcomponents.
-	// Users can explicitly disable sub component logging by using:
-	// WithLogger(logr.Discard()).
-	c.ClusterOptions = append([]ClusterOption{
-		WithLogger(c.Logger),
-	}, c.ClusterOptions...)
 }
 
 type EnvironmentOption interface {
@@ -180,7 +167,9 @@ func (env *Environment) LoadImageFromTar(
 
 func (env *Environment) execKindCommand(
 	ctx context.Context, stdout, stderr io.Writer, args ...string) error {
-	env.config.Logger.Info("exec: kind " + strings.Join(args, " "))
+	log := LoggerFromContext(ctx)
+	log.Info("exec: kind " + strings.Join(args, " "))
+
 	kindCmd := exec.CommandContext( //nolint:gosec
 		ctx, "kind", args...,
 	)

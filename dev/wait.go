@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-logr/logr"
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,16 +22,12 @@ const (
 )
 
 type WaiterConfig struct {
-	Logger   logr.Logger
 	Timeout  time.Duration
 	Interval time.Duration
 }
 
 // Sets defaults on the waiter config.
 func (c *WaiterConfig) Default() {
-	if c.Logger.GetSink() == nil {
-		c.Logger = logr.Discard()
-	}
 	if c.Timeout == 0 {
 		c.Timeout = WaiterDefaultTimeout
 	}
@@ -127,6 +122,8 @@ func (w *Waiter) WaitForObject(
 	checkFn func(obj client.Object) (done bool, err error),
 	opts ...WaitOption,
 ) error {
+	log := LoggerFromContext(ctx)
+
 	c := w.config
 	for _, opt := range opts {
 		opt.ApplyToWaiterConfig(&c)
@@ -138,7 +135,7 @@ func (w *Waiter) WaitForObject(
 	}
 
 	key := client.ObjectKeyFromObject(object)
-	c.Logger.Info(fmt.Sprintf("waiting %s on %s %s %s...",
+	log.Info(fmt.Sprintf("waiting %s on %s %s %s...",
 		c.Timeout, gvk, key, waitReason))
 
 	return wait.PollImmediateWithContext(

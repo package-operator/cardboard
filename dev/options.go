@@ -4,23 +4,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 )
-
-type WithLogger logr.Logger
-
-func (l WithLogger) ApplyToEnvironmentConfig(c *EnvironmentConfig) {
-	c.Logger = logr.Logger(l)
-}
-
-func (l WithLogger) ApplyToClusterConfig(c *ClusterConfig) {
-	c.Logger = logr.Logger(l)
-}
-
-func (l WithLogger) ApplyToWaiterConfig(c *WaiterConfig) {
-	c.Logger = logr.Logger(l)
-}
 
 type WithInterval time.Duration
 

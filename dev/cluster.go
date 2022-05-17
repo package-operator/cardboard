@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/go-logr/logr"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -26,7 +25,6 @@ var defaultSchemeBuilder runtime.SchemeBuilder = runtime.SchemeBuilder{
 }
 
 type ClusterConfig struct {
-	Logger        logr.Logger
 	SchemeBuilder runtime.SchemeBuilder
 	NewWaiter     NewWaiterFunc
 	WaitOptions   []WaitOption
@@ -61,9 +59,6 @@ type NewCtrlClientFunc func(c *rest.Config, opts client.Options) (client.Client,
 var DefaultNewCtrlClientFunc = client.New
 
 func (c *ClusterConfig) Default() {
-	if c.Logger.GetSink() == nil {
-		c.Logger = logr.Discard()
-	}
 	if c.NewWaiter == nil {
 		c.NewWaiter = NewWaiter
 	}
@@ -79,13 +74,6 @@ func (c *ClusterConfig) Default() {
 	if c.NewCtrlClient == nil {
 		c.NewCtrlClient = DefaultNewCtrlClientFunc
 	}
-
-	// Prepend logger option to always default to the same logger for subcomponents.
-	// Users can explicitly disable sub component logging by using:
-	// WithLogger(logr.Discard()).
-	c.WaitOptions = append([]WaitOption{
-		WithLogger(c.Logger),
-	}, c.WaitOptions...)
 }
 
 type ClusterOption interface {

@@ -19,15 +19,11 @@ func TestClusterConfig_Default(t *testing.T) {
 
 func assertClusterConfigDefaults(t *testing.T, c ClusterConfig) {
 	t.Helper()
-	assert.NotNil(t, c.Logger)
 	// can't compare functions, so we just make sure something is defaulted
 	assert.NotNil(t, c.NewWaiter)
 	assert.NotNil(t, c.NewHelm)
 	assert.NotNil(t, c.NewRestConfig)
 	assert.NotNil(t, c.NewCtrlClient)
-
-	assert.NotNil(t, c.Logger)
-	assert.Equal(t, []WaitOption{WithLogger(c.Logger)}, c.WaitOptions)
 
 	// Workdir is mandatory in NewCluster()
 	assert.Equal(t, "test/kubeconfig.yaml", c.Kubeconfig)

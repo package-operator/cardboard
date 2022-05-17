@@ -1,6 +1,7 @@
 package dev
 
 import (
+	"context"
 	"testing"
 
 	"github.com/go-logr/logr"
@@ -14,9 +15,8 @@ const (
 func ExampleEnvironment() {
 	log := logr.Discard()
 
-	_ = NewEnvironment(
+	env := NewEnvironment(
 		"cheese", ".cache/dev-env/cheese",
-		WithLogger(log),
 		WithContainerRuntime(ContainerRuntimePodman),
 		WithClusterInitializers{
 			ClusterLoadObjectsFromFiles{
@@ -46,6 +46,9 @@ func ExampleEnvironment() {
 			},
 		},
 	)
+	if err := env.Init(ContextWithLogger(context.Background(), log)); err != nil {
+		// handle error
+	}
 }
 
 func TestEnvironmentConfig_Default(t *testing.T) {
@@ -65,7 +68,5 @@ func assertEnvironmentConfigDefaults(t *testing.T, c EnvironmentConfig) {
 	t.Helper()
 
 	assert.Equal(t, ContainerRuntimePodman, c.ContainerRuntime)
-	assert.NotNil(t, c.Logger)
 	assert.NotNil(t, c.NewCluster)
-	assert.Equal(t, []ClusterOption{WithLogger(c.Logger)}, c.ClusterOptions)
 }

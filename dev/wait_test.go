@@ -39,7 +39,6 @@ func TestWaiter_NewWaiter(t *testing.T) {
 
 		assert.Equal(t, interval, w.config.Interval)
 		assert.Equal(t, timeout, w.config.Timeout)
-		assert.NotNil(t, w.config.Logger)
 	})
 }
 
@@ -47,7 +46,6 @@ func assertConfigDefaults(t *testing.T, c WaiterConfig) {
 	t.Helper()
 	assert.Equal(t, WaiterDefaultInterval, c.Interval)
 	assert.Equal(t, WaiterDefaultTimeout, c.Timeout)
-	assert.NotNil(t, c.Logger)
 }
 
 func Test_checkObjectCondition(t *testing.T) {
