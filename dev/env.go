@@ -3,6 +3,7 @@ package dev
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -27,7 +28,7 @@ type EnvironmentConfig struct {
 // Apply default configuration.
 func (c *EnvironmentConfig) Default() {
 	if len(c.ContainerRuntime) == 0 {
-		c.ContainerRuntime = Podman
+		c.ContainerRuntime = ContainerRuntimeAuto
 	}
 	if c.Logger.GetSink() == nil {
 		c.Logger = logr.Discard()
@@ -79,6 +80,10 @@ func NewEnvironment(name, workDir string, opts ...EnvironmentOption) *Environmen
 
 // Initializes the environment and prepares it for use.
 func (env *Environment) Init(ctx context.Context) error {
+	if err := env.setContainerRuntime(); err != nil {
+		return err
+	}
+
 	kindConfig := `kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 `
@@ -186,4 +191,30 @@ func (env *Environment) execKindCommand(
 	kindCmd.Stdout = stdout
 	kindCmd.Stderr = stderr
 	return kindCmd.Run()
+}
+
+func (env *Environment) setContainerRuntime() error {
+	if env.config.ContainerRuntime == ContainerRuntimeAuto {
+		cr, err := DetectContainerRuntime()
+		if err != nil {
+			return err
+		}
+		env.config.ContainerRuntime = cr
+	}
+	return nil
+}
+
+func DetectContainerRuntime() (ContainerRuntime, error) {
+	if _, err := exec.LookPath("podman"); err == nil {
+		return ContainerRuntimePodman, nil
+	} else if !errors.Is(err, exec.ErrNotFound) {
+		return "", fmt.Errorf("looking up podman executable: %w", err)
+	}
+
+	if _, err := exec.LookPath("docker"); err == nil {
+		return ContainerRuntimeDocker, nil
+	} else if !errors.Is(err, exec.ErrNotFound) {
+		return "", fmt.Errorf("looking up docker executable: %w", err)
+	}
+	return "", fmt.Errorf("could not detect container runtime")
 }

@@ -85,8 +85,9 @@ func (i WithClusterInitializers) ApplyToEnvironmentConfig(c *EnvironmentConfig) 
 type ContainerRuntime string
 
 const (
-	Podman ContainerRuntime = "podman"
-	Docker ContainerRuntime = "docker"
+	ContainerRuntimePodman ContainerRuntime = "podman"
+	ContainerRuntimeDocker ContainerRuntime = "docker"
+	ContainerRuntimeAuto   ContainerRuntime = "auto" // auto detect
 )
 
 type WithContainerRuntime ContainerRuntime

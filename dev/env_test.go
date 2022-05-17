@@ -17,7 +17,7 @@ func ExampleEnvironment() {
 	_ = NewEnvironment(
 		"cheese", ".cache/dev-env/cheese",
 		WithLogger(log),
-		WithContainerRuntime(Podman),
+		WithContainerRuntime(ContainerRuntimePodman),
 		WithClusterInitializers{
 			ClusterLoadObjectsFromFiles{
 				"config/crd01.yaml",
@@ -64,7 +64,7 @@ func TestEnvironment_NewEnvironment(t *testing.T) {
 func assertEnvironmentConfigDefaults(t *testing.T, c EnvironmentConfig) {
 	t.Helper()
 
-	assert.Equal(t, Podman, c.ContainerRuntime)
+	assert.Equal(t, ContainerRuntimePodman, c.ContainerRuntime)
 	assert.NotNil(t, c.Logger)
 	assert.NotNil(t, c.NewCluster)
 	assert.Equal(t, []ClusterOption{WithLogger(c.Logger)}, c.ClusterOptions)
