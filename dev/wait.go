@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-logr/logr"
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -122,7 +123,7 @@ func (w *Waiter) WaitForObject(
 	checkFn func(obj client.Object) (done bool, err error),
 	opts ...WaitOption,
 ) error {
-	log := LoggerFromContext(ctx)
+	log := logr.FromContextOrDiscard(ctx)
 
 	c := w.config
 	for _, opt := range opts {

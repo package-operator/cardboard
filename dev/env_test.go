@@ -46,7 +46,8 @@ func ExampleEnvironment() {
 			},
 		},
 	)
-	if err := env.Init(ContextWithLogger(context.Background(), log)); err != nil {
+	ctx := logr.NewContext(context.Background(), log)
+	if err := env.Init(ctx); err != nil {
 		// handle error
 	}
 }

@@ -11,6 +11,8 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+
+	"github.com/go-logr/logr"
 )
 
 type EnvironmentConfig struct {
@@ -167,7 +169,7 @@ func (env *Environment) LoadImageFromTar(
 
 func (env *Environment) execKindCommand(
 	ctx context.Context, stdout, stderr io.Writer, args ...string) error {
-	log := LoggerFromContext(ctx)
+	log := logr.FromContextOrDiscard(ctx)
 	log.Info("exec: kind " + strings.Join(args, " "))
 
 	kindCmd := exec.CommandContext( //nolint:gosec

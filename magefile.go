@@ -81,7 +81,7 @@ func (Test) Lint() error {
 // Versions
 const (
 	goimportsVersion    = "0.1.5"
-	golangciLintVersion = "1.43.0"
+	golangciLintVersion = "1.49.0"
 )
 
 type Dependency mg.Namespace
