@@ -167,6 +167,11 @@ func (env *Environment) LoadImageFromTar(
 	return nil
 }
 
+func (env *Environment) RunKindCommand(
+	ctx context.Context, stdout, stderr io.Writer, args ...string) error {
+	return env.execKindCommand(ctx, stdout, stderr, args...)
+}
+
 func (env *Environment) execKindCommand(
 	ctx context.Context, stdout, stderr io.Writer, args ...string) error {
 	log := logr.FromContextOrDiscard(ctx)

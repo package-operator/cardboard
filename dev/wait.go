@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"gopkg.in/yaml.v2"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -143,6 +144,44 @@ func (w *Waiter) WaitForObject(
 		ctx, c.Interval, c.Timeout,
 		func(ctx context.Context) (done bool, err error) {
 			err = w.client.Get(ctx, client.ObjectKeyFromObject(object), object)
+			if err != nil {
+				//nolint:nilerr // retry on transient errors
+				return false, nil
+			}
+
+			return checkFn(object)
+		})
+}
+
+// Wait for an object to not exist anymore.
+func (w *Waiter) WaitToBeGone(
+	ctx context.Context, object client.Object,
+	checkFn func(obj client.Object) (done bool, err error),
+	opts ...WaitOption,
+) error {
+	log := logr.FromContextOrDiscard(ctx)
+
+	c := w.config
+	for _, opt := range opts {
+		opt.ApplyToWaiterConfig(&c)
+	}
+
+	gvk, err := apiutil.GVKForObject(object, w.scheme)
+	if err != nil {
+		return err
+	}
+
+	key := client.ObjectKeyFromObject(object)
+	log.Info(fmt.Sprintf("waiting %s for %s %s to be gone...",
+		c.Timeout, gvk, key))
+
+	return wait.PollImmediateWithContext(
+		ctx, c.Interval, c.Timeout,
+		func(ctx context.Context) (done bool, err error) {
+			err = w.client.Get(ctx, client.ObjectKeyFromObject(object), object)
+			if errors.IsNotFound(err) {
+				return true, nil
+			}
 			if err != nil {
 				//nolint:nilerr // retry on transient errors
 				return false, nil
