@@ -2,11 +2,11 @@ package dev
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
-	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -214,7 +214,7 @@ func checkObjectCondition(
 		return false, nil
 	}
 
-	conditionsRaw, ok, err := unstructured.NestedFieldCopy(
+	conditionsRaw, ok, err := unstructured.NestedFieldNoCopy(
 		unstrObj.Object, "status", "conditions")
 	if err != nil {
 		return false, fmt.Errorf("could not access .status.conditions: %w", err)
@@ -225,12 +225,12 @@ func checkObjectCondition(
 	}
 
 	// Press into metav1.Condition scheme to be able to work typed.
-	conditionsYaml, err := yaml.Marshal(conditionsRaw)
+	conditionsJSON, err := json.Marshal(conditionsRaw)
 	if err != nil {
-		return false, fmt.Errorf("could not marshal conditions into yaml: %w", err)
+		return false, fmt.Errorf("could not marshal conditions into JSON: %w", err)
 	}
 	var conditions []metav1.Condition
-	if err := yaml.Unmarshal(conditionsYaml, &conditions); err != nil {
+	if err := json.Unmarshal(conditionsJSON, &conditions); err != nil {
 		return false, fmt.Errorf("could not unmarshal conditions: %w", err)
 	}
 

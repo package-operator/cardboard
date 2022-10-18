@@ -7,7 +7,6 @@ require (
 	github.com/magefile/mage v1.12.1
 	github.com/openshift/addon-operator/apis v0.0.0-20220111092509-93ca25c9359f
 	github.com/stretchr/testify v1.7.0
-	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.23.0
 	k8s.io/apiextensions-apiserver v0.23.0
 	k8s.io/apimachinery v0.23.1

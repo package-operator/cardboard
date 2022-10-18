@@ -68,6 +68,6 @@ func TestEnvironment_NewEnvironment(t *testing.T) {
 func assertEnvironmentConfigDefaults(t *testing.T, c EnvironmentConfig) {
 	t.Helper()
 
-	assert.Equal(t, ContainerRuntimePodman, c.ContainerRuntime)
+	assert.Equal(t, ContainerRuntimeAuto, c.ContainerRuntime)
 	assert.NotNil(t, c.NewCluster)
 }
