@@ -18,6 +18,7 @@ import (
 // Preserves lexical file order.
 func LoadKubernetesObjectsFromFolder(folderPath string) ([]unstructured.Unstructured, error) {
 	folder, err := os.Open(folderPath)
+	defer folder.Close()
 	if err != nil {
 		return nil, fmt.Errorf("open %q: %w", folderPath, err)
 	}
@@ -61,7 +62,7 @@ func LoadKubernetesObjectsFromFile(filePath string) ([]unstructured.Unstructured
 // A single file may contain multiple objects separated by "---\n".
 func LoadKubernetesObjectsFromBytes(fileYaml []byte) ([]unstructured.Unstructured, error) {
 	// Trim empty starting and ending objects
-	fileYaml = bytes.Trim(fileYaml, "---\n")
+	fileYaml = bytes.Trim(fileYaml, "-\n")
 
 	var objects []unstructured.Unstructured
 	// Split for every included yaml document.
