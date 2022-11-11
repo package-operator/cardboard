@@ -34,7 +34,7 @@ func (l ClusterLoadObjectsFromHttp) Init(
 	return cluster.CreateAndWaitFromHttp(ctx, l)
 }
 
-// Load objects from the given client.Object and applies them into the cluster.
+// Creates the referenced Object and waits for it to be ready.
 type ClusterLoadObjectFromClientObject struct {
 	client.Object
 }
