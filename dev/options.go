@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	kindv1alpha4 "sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 )
 
 type WithInterval time.Duration
@@ -91,6 +92,13 @@ type WithClusterOptions []ClusterOption
 
 func (opts WithClusterOptions) ApplyToEnvironmentConfig(c *EnvironmentConfig) {
 	c.ClusterOptions = opts
+}
+
+type WithKindClusterConfig kindv1alpha4.Cluster
+
+func (opts WithKindClusterConfig) ApplyToEnvironmentConfig(c *EnvironmentConfig) {
+	config := kindv1alpha4.Cluster(opts)
+	c.KindClusterConfig = &config
 }
 
 type WithKubeconfigPath string

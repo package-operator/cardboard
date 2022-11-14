@@ -12,16 +12,20 @@ import (
 	"path"
 	"strings"
 
+	"sigs.k8s.io/yaml"
+
 	"github.com/go-logr/logr"
+	kindv1alpha4 "sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 )
 
 type EnvironmentConfig struct {
 	// Cluster initializers prepare a cluster for use.
 	ClusterInitializers []ClusterInitializer
 	// Container runtime to use
-	ContainerRuntime ContainerRuntime
-	NewCluster       NewClusterFunc
-	ClusterOptions   []ClusterOption
+	ContainerRuntime  ContainerRuntime
+	NewCluster        NewClusterFunc
+	ClusterOptions    []ClusterOption
+	KindClusterConfig *kindv1alpha4.Cluster
 }
 
 // Apply default configuration.
@@ -32,6 +36,36 @@ func (c *EnvironmentConfig) Default() {
 	if c.NewCluster == nil {
 		c.NewCluster = NewCluster
 	}
+	if c.KindClusterConfig == nil {
+		defaultCluster := defaultKindConfigCluster()
+		c.KindClusterConfig = &defaultCluster
+	}
+}
+
+func defaultKindConfigCluster() kindv1alpha4.Cluster {
+	cluster := kindv1alpha4.Cluster{
+		TypeMeta: kindv1alpha4.TypeMeta{
+			Kind:       "Cluster",
+			APIVersion: "kind.x-k8s.io/v1alpha4",
+		},
+		Nodes: []kindv1alpha4.Node{
+			{
+				Role: kindv1alpha4.ControlPlaneRole,
+			},
+		},
+	}
+
+	if _, err := os.Lstat("/dev/dm-0"); err == nil {
+		cluster.Nodes[0].ExtraMounts = []kindv1alpha4.Mount{
+			{
+				HostPath:      "/dev/dm-0",
+				ContainerPath: "/dev/dm-0",
+				Propagation:   kindv1alpha4.MountPropagationHostToContainer,
+			},
+		}
+	}
+	kindv1alpha4.SetDefaultsCluster(&cluster)
+	return cluster
 }
 
 type EnvironmentOption interface {
@@ -73,30 +107,23 @@ func (env *Environment) Init(ctx context.Context) error {
 		return err
 	}
 
-	kindConfig := `kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-`
-
-	// Workaround for https://github.com/kubernetes-sigs/kind/issues/2411
-	// For BTRFS on LUKS.
-	if _, err := os.Lstat("/dev/dm-0"); err == nil {
-		kindConfig += `nodes:
-- role: control-plane
-  extraMounts:
-    - hostPath: /dev/dm-0
-      containerPath: /dev/dm-0
-      propagation: HostToContainer
-`
+	if env.config.KindClusterConfig == nil {
+		return fmt.Errorf("no KinD cluster config found")
 	}
 
 	if err := os.MkdirAll(env.WorkDir, os.ModePerm); err != nil {
 		return fmt.Errorf("creating workdir: %w", err)
 	}
 
+	kindConfigYamlBytes, err := yaml.Marshal(env.config.KindClusterConfig)
+	if err != nil {
+		return fmt.Errorf("failed to process the KinD cluster config as a YAML: %w", err)
+	}
+
 	kubeconfigPath := path.Join(env.WorkDir, "kubeconfig.yaml")
 	kindconfigPath := path.Join(env.WorkDir, "/kind.yaml")
 	if err := ioutil.WriteFile(
-		kindconfigPath, []byte(kindConfig), os.ModePerm); err != nil {
+		kindconfigPath, kindConfigYamlBytes, os.ModePerm); err != nil {
 		return fmt.Errorf("creating kind cluster config: %w", err)
 	}
 
