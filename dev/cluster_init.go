@@ -7,6 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Load objects from given folder paths and applies them into the cluster.
@@ -31,6 +32,16 @@ type ClusterLoadObjectsFromHttp []string
 func (l ClusterLoadObjectsFromHttp) Init(
 	ctx context.Context, cluster *Cluster) error {
 	return cluster.CreateAndWaitFromHttp(ctx, l)
+}
+
+// Creates the referenced Object and waits for it to be ready.
+type ClusterLoadObjectFromClientObject struct {
+	client.Object
+}
+
+func (l ClusterLoadObjectFromClientObject) Init(
+	ctx context.Context, cluster *Cluster) error {
+	return cluster.CreateAndWaitForReadiness(ctx, l.Object)
 }
 
 // Adds the helm repository, updates repository cache and installs a helm package.
