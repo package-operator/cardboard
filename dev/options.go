@@ -98,6 +98,7 @@ type WithKindClusterConfig kindv1alpha4.Cluster
 
 func (opts WithKindClusterConfig) ApplyToEnvironmentConfig(c *EnvironmentConfig) {
 	config := kindv1alpha4.Cluster(opts)
+	sanitizeKindClusterConfig(&config)
 	c.KindClusterConfig = &config
 }
 

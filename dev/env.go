@@ -37,12 +37,19 @@ func (c *EnvironmentConfig) Default() {
 		c.NewCluster = NewCluster
 	}
 	if c.KindClusterConfig == nil {
-		defaultCluster := defaultKindConfigCluster()
+		defaultCluster := defaultKindClusterConfig()
 		c.KindClusterConfig = &defaultCluster
 	}
 }
 
-func defaultKindConfigCluster() kindv1alpha4.Cluster {
+func sanitizeKindClusterConfig(conf *kindv1alpha4.Cluster) {
+	conf.TypeMeta = kindv1alpha4.TypeMeta{
+		Kind:       "Cluster",
+		APIVersion: "kind.x-k8s.io/v1alpha4",
+	}
+}
+
+func defaultKindClusterConfig() kindv1alpha4.Cluster {
 	cluster := kindv1alpha4.Cluster{
 		TypeMeta: kindv1alpha4.TypeMeta{
 			Kind:       "Cluster",
@@ -65,6 +72,7 @@ func defaultKindConfigCluster() kindv1alpha4.Cluster {
 		}
 	}
 	kindv1alpha4.SetDefaultsCluster(&cluster)
+	sanitizeKindClusterConfig(&cluster)
 	return cluster
 }
 
