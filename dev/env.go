@@ -14,6 +14,7 @@ import (
 
 	kindv1alpha4 "sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 	"sigs.k8s.io/kind/pkg/cluster"
+	"sigs.k8s.io/kind/pkg/cluster/nodes"
 	"sigs.k8s.io/kind/pkg/cluster/nodeutils"
 	kindcmd "sigs.k8s.io/kind/pkg/cmd"
 )
@@ -214,17 +215,23 @@ func (env *Environment) LoadImageFromTar(filePath string) error {
 	if _, err := os.Stat(filePath); err != nil {
 		return err
 	}
-	f, err := os.Open(filePath)
-	if err != nil {
-		return fmt.Errorf("failed to open the image: %w", err)
-	}
-	defer f.Close()
+
 	for _, node := range nodesList {
-		if err := nodeutils.LoadImageArchive(node, f); err != nil {
+		node := node
+		if err := loadImageTarIntoNode(filePath, node); err != nil {
 			return fmt.Errorf("failed to load the image: %w", err)
 		}
 	}
 	return nil
+}
+
+func loadImageTarIntoNode(imageTarPath string, node nodes.Node) error {
+	f, err := os.Open(imageTarPath)
+	if err != nil {
+		return fmt.Errorf("failed to open the image: %w", err)
+	}
+	defer f.Close()
+	return nodeutils.LoadImageArchive(node, f)
 }
 
 func (env *Environment) setContainerRuntime() error {

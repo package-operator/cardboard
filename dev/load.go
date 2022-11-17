@@ -18,10 +18,10 @@ import (
 // Preserves lexical file order.
 func LoadKubernetesObjectsFromFolder(folderPath string) ([]unstructured.Unstructured, error) {
 	folder, err := os.Open(folderPath)
-	defer folder.Close()
 	if err != nil {
 		return nil, fmt.Errorf("open %q: %w", folderPath, err)
 	}
+	defer folder.Close()
 
 	files, err := folder.Readdir(-1)
 	if err != nil {
