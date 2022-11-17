@@ -1,27 +1,31 @@
 package dev
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
-	"strings"
+	"time"
 
-	"github.com/go-logr/logr"
+	"sigs.k8s.io/yaml"
+
+	kindv1alpha4 "sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
+	"sigs.k8s.io/kind/pkg/cluster"
+	"sigs.k8s.io/kind/pkg/cluster/nodeutils"
+	kindcmd "sigs.k8s.io/kind/pkg/cmd"
 )
 
 type EnvironmentConfig struct {
 	// Cluster initializers prepare a cluster for use.
 	ClusterInitializers []ClusterInitializer
 	// Container runtime to use
-	ContainerRuntime ContainerRuntime
-	NewCluster       NewClusterFunc
-	ClusterOptions   []ClusterOption
+	ContainerRuntime  ContainerRuntime
+	NewCluster        NewClusterFunc
+	ClusterOptions    []ClusterOption
+	KindClusterConfig *kindv1alpha4.Cluster
 }
 
 // Apply default configuration.
@@ -32,6 +36,44 @@ func (c *EnvironmentConfig) Default() {
 	if c.NewCluster == nil {
 		c.NewCluster = NewCluster
 	}
+	if c.KindClusterConfig == nil {
+		defaultCluster := defaultKindClusterConfig()
+		c.KindClusterConfig = &defaultCluster
+	}
+}
+
+func sanitizeKindClusterConfig(conf *kindv1alpha4.Cluster) {
+	conf.TypeMeta = kindv1alpha4.TypeMeta{
+		Kind:       "Cluster",
+		APIVersion: "kind.x-k8s.io/v1alpha4",
+	}
+}
+
+func defaultKindClusterConfig() kindv1alpha4.Cluster {
+	cluster := kindv1alpha4.Cluster{
+		TypeMeta: kindv1alpha4.TypeMeta{
+			Kind:       "Cluster",
+			APIVersion: "kind.x-k8s.io/v1alpha4",
+		},
+		Nodes: []kindv1alpha4.Node{
+			{
+				Role: kindv1alpha4.ControlPlaneRole,
+			},
+		},
+	}
+
+	if _, err := os.Lstat("/dev/dm-0"); err == nil {
+		cluster.Nodes[0].ExtraMounts = []kindv1alpha4.Mount{
+			{
+				HostPath:      "/dev/dm-0",
+				ContainerPath: "/dev/dm-0",
+				Propagation:   kindv1alpha4.MountPropagationHostToContainer,
+			},
+		}
+	}
+	kindv1alpha4.SetDefaultsCluster(&cluster)
+	sanitizeKindClusterConfig(&cluster)
+	return cluster
 }
 
 type EnvironmentOption interface {
@@ -73,51 +115,54 @@ func (env *Environment) Init(ctx context.Context) error {
 		return err
 	}
 
-	kindConfig := `kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-`
-
-	// Workaround for https://github.com/kubernetes-sigs/kind/issues/2411
-	// For BTRFS on LUKS.
-	if _, err := os.Lstat("/dev/dm-0"); err == nil {
-		kindConfig += `nodes:
-- role: control-plane
-  extraMounts:
-    - hostPath: /dev/dm-0
-      containerPath: /dev/dm-0
-      propagation: HostToContainer
-`
+	if env.config.KindClusterConfig == nil {
+		return fmt.Errorf("no KinD cluster config found")
 	}
 
 	if err := os.MkdirAll(env.WorkDir, os.ModePerm); err != nil {
 		return fmt.Errorf("creating workdir: %w", err)
 	}
 
+	kindConfigYamlBytes, err := yaml.Marshal(env.config.KindClusterConfig)
+	if err != nil {
+		return fmt.Errorf("failed to process the KinD cluster config as a YAML: %w", err)
+	}
+
 	kubeconfigPath := path.Join(env.WorkDir, "kubeconfig.yaml")
 	kindconfigPath := path.Join(env.WorkDir, "/kind.yaml")
 	if err := ioutil.WriteFile(
-		kindconfigPath, []byte(kindConfig), os.ModePerm); err != nil {
+		kindconfigPath, kindConfigYamlBytes, os.ModePerm); err != nil {
 		return fmt.Errorf("creating kind cluster config: %w", err)
 	}
 
-	// Needs cluster creation?
-	var checkOutput bytes.Buffer
-	if err := env.execKindCommand(ctx, &checkOutput, nil, "get", "clusters"); err != nil {
-		return fmt.Errorf("getting existing kind clusters: %w", err)
+	provider, err := env.getKindProvider()
+	if err != nil {
+		return err
 	}
 
-	// Only create cluster if it is not already there.
-	createCluster := !strings.Contains(checkOutput.String(), env.Name+"\n")
+	// check if cluster already exists with the same name
+	createCluster := true
+	existingKindClusters, err := provider.List()
+	if err != nil {
+		return fmt.Errorf("failed to fetch the existing KinD clusters: %w", err)
+	}
+	for _, cluster := range existingKindClusters {
+		if env.Name == cluster {
+			createCluster = false
+			break
+		}
+	}
+
 	if createCluster {
-		// Create cluster
-		if err := env.execKindCommand(
-			ctx, os.Stdout, os.Stderr,
-			"create", "cluster",
-			"--kubeconfig="+kubeconfigPath,
-			"--name="+env.Name,
-			"--config="+kindconfigPath,
+		if err := provider.Create(env.Name,
+			cluster.CreateWithKubeconfigPath(kubeconfigPath),
+			cluster.CreateWithConfigFile(kindconfigPath),
+			cluster.CreateWithDisplayUsage(true),
+			cluster.CreateWithDisplaySalutation(true),
+			cluster.CreateWithWaitForReady(5*time.Minute),
+			cluster.CreateWithRetain(false),
 		); err != nil {
-			return fmt.Errorf("creating kind cluster: %w", err)
+			return fmt.Errorf("failed to create the cluster: %w", err)
 		}
 	}
 
@@ -143,50 +188,43 @@ apiVersion: kind.x-k8s.io/v1alpha4
 
 // Destroy/Teardown the development environment.
 func (env *Environment) Destroy(ctx context.Context) error {
-	if err := env.execKindCommand(
-		ctx, os.Stdout, os.Stderr,
-		"delete", "cluster",
-		"--kubeconfig="+path.Join(env.WorkDir, "kubeconfig.yaml"),
-		"--name="+env.Name,
-	); err != nil {
-		return fmt.Errorf("deleting kind cluster: %w", err)
+	provider, err := env.getKindProvider()
+	if err != nil {
+		return err
+	}
+
+	kubeConfigPath := path.Join(env.WorkDir, "kubeconfig.yaml")
+	if err := provider.Delete(env.Name, kubeConfigPath); err != nil {
+		return fmt.Errorf("failed to delete the cluster: %w", err)
 	}
 	return nil
 }
 
 // Load an image from a tar archive into the environment.
-func (env *Environment) LoadImageFromTar(
-	ctx context.Context, filePath string) error {
-	if err := env.execKindCommand(
-		ctx, os.Stdout, os.Stderr,
-		"load", "image-archive", filePath,
-		"--name="+env.Name,
-	); err != nil {
-		return fmt.Errorf("loading image archive: %w", err)
+func (env *Environment) LoadImageFromTar(filePath string) error {
+	provider, err := env.getKindProvider()
+	if err != nil {
+		return err
+	}
+	nodesList, err := provider.ListInternalNodes(env.Name)
+	if err != nil {
+		return fmt.Errorf("failed to list the nodes of the KinD cluster: %w", err)
+	}
+
+	if _, err := os.Stat(filePath); err != nil {
+		return err
+	}
+	f, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open the image: %w", err)
+	}
+	defer f.Close()
+	for _, node := range nodesList {
+		if err := nodeutils.LoadImageArchive(node, f); err != nil {
+			return fmt.Errorf("failed to load the image: %w", err)
+		}
 	}
 	return nil
-}
-
-func (env *Environment) RunKindCommand(
-	ctx context.Context, stdout, stderr io.Writer, args ...string) error {
-	return env.execKindCommand(ctx, stdout, stderr, args...)
-}
-
-func (env *Environment) execKindCommand(
-	ctx context.Context, stdout, stderr io.Writer, args ...string) error {
-	log := logr.FromContextOrDiscard(ctx)
-	log.Info("exec: kind " + strings.Join(args, " "))
-
-	kindCmd := exec.CommandContext( //nolint:gosec
-		ctx, "kind", args...,
-	)
-	kindCmd.Env = os.Environ()
-	if env.config.ContainerRuntime == "podman" {
-		kindCmd.Env = append(kindCmd.Env, "KIND_EXPERIMENTAL_PROVIDER=podman")
-	}
-	kindCmd.Stdout = stdout
-	kindCmd.Stderr = stderr
-	return kindCmd.Run()
 }
 
 func (env *Environment) setContainerRuntime() error {
@@ -213,4 +251,27 @@ func DetectContainerRuntime() (ContainerRuntime, error) {
 		return "", fmt.Errorf("looking up docker executable: %w", err)
 	}
 	return "", fmt.Errorf("could not detect container runtime")
+}
+
+func (env *Environment) getKindProvider() (cluster.Provider, error) {
+	var providerOpt cluster.ProviderOption
+	switch env.config.ContainerRuntime {
+	case ContainerRuntimeDocker:
+		providerOpt = cluster.ProviderWithDocker()
+	case ContainerRuntimePodman:
+		providerOpt = cluster.ProviderWithPodman()
+	case ContainerRuntimeAuto:
+		if err := env.setContainerRuntime(); err != nil {
+			return cluster.Provider{}, fmt.Errorf("failed to auto-set the container runtime: %w", err)
+		}
+		return env.getKindProvider()
+	default:
+		return cluster.Provider{}, fmt.Errorf("unknown container runtime found")
+	}
+	logger := kindcmd.NewLogger()
+	return *cluster.NewProvider(
+		cluster.ProviderWithLogger(logger),
+		providerOpt,
+	), nil
+
 }
