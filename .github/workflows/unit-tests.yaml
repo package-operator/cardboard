@@ -13,12 +13,20 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.18
-      - name: Install Mage
-        run: go get -u -d github.com/magefile/mage && \
-             cd $GOPATH/src/github.com/magefile/mage && \
-             go run bootstrap.go && \
-             cd -
+#      - name: Install Mage
+#        run: go get -u -d github.com/magefile/mage && \
+#             cd $GOPATH/src/github.com/magefile/mage && \
+#             go run bootstrap.go && \
+#             cd -
       - name: Install Dependencies
-        run: mage tidy
+        uses: magefile/mage-action@v2
+        with:
+          version: latest
+          args: tidy
+#        run: mage tidy
       - name: Run unit tests
-        run: mage test:unit
+        uses: magefile/mage-action@v2
+        with:
+          version: latest
+          args: test:unit
+#        run: mage test:unit
