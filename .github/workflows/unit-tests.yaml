@@ -1,0 +1,24 @@
+name: unit-tests
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      - name: Install Mage
+        run: go get -u -d github.com/magefile/mage && \
+             cd $GOPATH/src/github.com/magefile/mage && \
+             go run bootstrap.go && \
+             cd -
+      - name: Install Dependencies
+        run: mage tidy
+      - name: Run unit tests
+        run: mage test:unit
