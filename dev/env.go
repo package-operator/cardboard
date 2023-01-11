@@ -4,12 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"time"
 
+	"github.com/go-logr/logr"
 	"sigs.k8s.io/yaml"
 
 	kindv1alpha4 "sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
@@ -232,6 +235,22 @@ func loadImageTarIntoNode(imageTarPath string, node nodes.Node) error {
 	}
 	defer f.Close()
 	return nodeutils.LoadImageArchive(node, f)
+}
+
+func (env *Environment) RunKindCommand(ctx context.Context, stdout, stderr io.Writer, args ...string) error {
+	log := logr.FromContextOrDiscard(ctx)
+	log.Info("exec: kind " + strings.Join(args, " "))
+
+	kindCmd := exec.CommandContext( //nolint:gosec
+		ctx, "kind", args...,
+	)
+	kindCmd.Env = os.Environ()
+	if env.config.ContainerRuntime == "podman" {
+		kindCmd.Env = append(kindCmd.Env, "KIND_EXPERIMENTAL_PROVIDER=podman")
+	}
+	kindCmd.Stdout = stdout
+	kindCmd.Stderr = stderr
+	return kindCmd.Run()
 }
 
 func (env *Environment) setContainerRuntime() error {
