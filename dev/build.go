@@ -2,11 +2,12 @@ package dev
 
 import (
 	"fmt"
-	"github.com/magefile/mage/mg"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/magefile/mage/mg"
 )
 
 type ImageBuildInfo struct {
@@ -18,11 +19,12 @@ type ImageBuildInfo struct {
 }
 
 type PackageBuildInfo struct {
-	ImageTag   string
-	CacheDir   string
-	SourcePath string // source directory
-	OutputPath string // destination: .tar file path
-	Runtime    string
+	ImageTag       string
+	CacheDir       string
+	SourcePath     string // source directory
+	OutputPath     string // destination: .tar file path
+	Runtime        string
+	ExecutablePath string
 }
 
 type ImagePushInfo struct {
@@ -76,14 +78,19 @@ func BuildImage(buildInfo *ImageBuildInfo, deps []interface{}) error {
 }
 
 // BuildPackage builds a package image using the package operator CLI,
-// requires `kubectl package` command to be available on the system
+// requires `kubectl-package` command to be available on the system
 func BuildPackage(buildInfo *PackageBuildInfo, deps []interface{}) error {
 	if len(deps) > 0 {
 		mg.SerialDeps(deps...)
 	}
 
+	executable := "kubectl-package"
+	if len(buildInfo.ExecutablePath) != 0 {
+		executable = buildInfo.ExecutablePath
+	}
+
 	buildArgs := []string{
-		"kubectl", "package", "build", "--tag", buildInfo.ImageTag,
+		executable, "build", "--tag", buildInfo.ImageTag,
 		"--output", buildInfo.OutputPath, buildInfo.SourcePath,
 	}
 	importArgs := []string{
