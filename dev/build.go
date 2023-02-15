@@ -94,7 +94,7 @@ func BuildPackage(buildInfo *PackageBuildInfo, deps []interface{}) error {
 		"--output", buildInfo.OutputPath, buildInfo.SourcePath,
 	}
 	importArgs := []string{
-		buildInfo.Runtime, "import", buildInfo.OutputPath, buildInfo.ImageTag,
+		buildInfo.Runtime, "load", "--input", buildInfo.OutputPath,
 	}
 
 	for _, args := range [][]string{buildArgs, importArgs} {
