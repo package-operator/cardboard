@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/go-logr/logr v1.2.0
-	github.com/magefile/mage v1.12.1
+	github.com/magefile/mage v1.14.0
 	github.com/openshift/addon-operator/apis v0.0.0-20220111092509-93ca25c9359f
 	github.com/stretchr/testify v1.7.0
 	k8s.io/api v0.23.0

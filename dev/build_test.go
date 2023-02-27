@@ -11,22 +11,19 @@ import (
 type buildImgTestCase struct {
 	name      string
 	buildInfo ImageBuildInfo
-	buildCmd  []string
-	saveCmd   []string
+	commands  [][]string
 }
 
 type buildPkgTestCase struct {
 	name      string
 	buildInfo PackageBuildInfo
-	buildCmd  []string
-	importCmd []string
+	commands  [][]string
 }
 
 type pushTestCase struct {
 	name     string
 	pushInfo ImagePushInfo
-	pushCmd  []string
-	loginCmd []string
+	commands [][]string
 }
 
 var (
@@ -39,8 +36,10 @@ var (
 			ContextDir:    "test_ContextDir",
 			Runtime:       "test_Runtime",
 		},
-		buildCmd: []string{"test_Runtime", "build", "-t", "test_ImageTag", "-f", "test_ContainerFile", "test_ContextDir"},
-		saveCmd:  []string{"test_Runtime", "image", "save", "-o", ".tar", "test_ImageTag"},
+		commands: [][]string{
+			{"test_Runtime", "build", "-t", "test_ImageTag", "-f", "test_ContainerFile", "test_ContextDir"},
+			{"test_Runtime", "image", "save", "-o", ".tar", "test_ImageTag"},
+		},
 	}
 
 	noConFileBuildImgCase = buildImgTestCase{
@@ -52,8 +51,10 @@ var (
 			ContextDir:    "test_ContextDir",
 			Runtime:       "test_Runtime",
 		},
-		buildCmd: []string{"test_Runtime", "build", "-t", "test_ImageTag", "test_ContextDir"},
-		saveCmd:  []string{"test_Runtime", "image", "save", "-o", ".tar", "test_ImageTag"},
+		commands: [][]string{
+			{"test_Runtime", "build", "-t", "test_ImageTag", "test_ContextDir"},
+			{"test_Runtime", "image", "save", "-o", ".tar", "test_ImageTag"},
+		},
 	}
 
 	defaultBuildPkgCase = buildPkgTestCase{
@@ -65,8 +66,10 @@ var (
 			OutputPath: "test_OutputPath",
 			Runtime:    "test_Runtime",
 		},
-		buildCmd:  []string{"kubectl", "package", "build", "--tag", "test_ImageTag", "--output", "test_OutputPath", "test_SourcePath"},
-		importCmd: []string{"test_Runtime", "import", "test_OutputPath", "test_ImageTag"},
+		commands: [][]string{
+			{"kubectl-package", "build", "--tag", "test_ImageTag", "--output", "test_OutputPath", "test_SourcePath"},
+			{"test_Runtime", "load", "--input", "test_OutputPath"},
+		},
 	}
 
 	defaultPushCase = pushTestCase{
@@ -77,8 +80,10 @@ var (
 			Runtime:    "test_Runtime",
 			DigestFile: "test_DigestFile",
 		},
-		pushCmd:  []string{"test_Runtime", "push", "test_ImageTag"},
-		loginCmd: []string{"test_Runtime", "login", "-u=" + os.Getenv("QUAY_USER"), "-p=" + os.Getenv("QUAY_TOKEN"), "quay.io"},
+		commands: [][]string{
+			{"test_Runtime", "push", "test_ImageTag"},
+			{"test_Runtime", "login", "-u=" + os.Getenv("QUAY_USER"), "-p=" + os.Getenv("QUAY_TOKEN"), "quay.io"},
+		},
 	}
 
 	podmanPushCase = pushTestCase{
@@ -89,8 +94,10 @@ var (
 			Runtime:    string(ContainerRuntimePodman),
 			DigestFile: "test_DigestFile",
 		},
-		pushCmd:  []string{string(ContainerRuntimePodman), "push", "--digestfile=test_DigestFile", "test_ImageTag"},
-		loginCmd: []string{string(ContainerRuntimePodman), "login", "-u=" + os.Getenv("QUAY_USER"), "-p=" + os.Getenv("QUAY_TOKEN"), "quay.io"},
+		commands: [][]string{
+			{string(ContainerRuntimePodman), "push", "--digestfile=test_DigestFile", "test_ImageTag"},
+			{string(ContainerRuntimePodman), "login", "-u=" + os.Getenv("QUAY_USER"), "-p=" + os.Getenv("QUAY_TOKEN"), "quay.io"},
+		},
 	}
 
 	buildImgTestCases = map[string]*buildImgTestCase{
@@ -120,6 +127,27 @@ const (
 	pushHelper     = "TestPushImage_HelperProcess"
 )
 
+func matchCommands(cmd1, cmd2 []string) bool {
+	if len(cmd1) != len(cmd2) {
+		return false
+	}
+	for i, arg := range cmd1 {
+		if arg != cmd2[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func matchAtLeastOne(cmd []string, cmds [][]string) bool {
+	for _, c := range cmds {
+		if matchCommands(c, cmd) {
+			return true
+		}
+	}
+	return false
+}
+
 func mockExecCommand(command string, args ...string) *exec.Cmd {
 	cs := []string{"-test.run=" + helperProcess, "--", command}
 	cs = append(cs, args...)
@@ -137,13 +165,8 @@ func TestBuildImage_HelperProcess(t *testing.T) {
 	}
 	tc := buildImgTestCases[os.Getenv("GO_TEST_CASE_NAME")]
 	command := os.Args[3:]
-	switch command[1] {
-	case "build":
-		assert.Equal(t, tc.buildCmd, command)
-	case "image":
-		assert.Equal(t, tc.saveCmd, command)
-	default:
-		t.Errorf("invalid command")
+	if !matchAtLeastOne(command, tc.commands) {
+		t.Fatalf("invalid command: %v", command)
 	}
 	os.Exit(0)
 }
@@ -167,13 +190,8 @@ func TestBuildPackage_HelperProcess(t *testing.T) {
 	}
 	tc := buildPkgTestCases[os.Getenv("GO_TEST_CASE_NAME")]
 	command := os.Args[3:]
-	switch command[1] {
-	case "package":
-		assert.Equal(t, tc.buildCmd, command)
-	case "import":
-		assert.Equal(t, tc.importCmd, command)
-	default:
-		t.Errorf("invalid command")
+	if !matchAtLeastOne(command, tc.commands) {
+		t.Fatalf("invalid command: %v", command)
 	}
 	os.Exit(0)
 }
@@ -197,11 +215,8 @@ func TestPushImage_HelperProcess(t *testing.T) {
 	}
 	tc := pushTestCases[os.Getenv("GO_TEST_CASE_NAME")]
 	command := os.Args[3:]
-	switch command[1] {
-	case "push":
-		assert.Equal(t, tc.pushCmd, command)
-	case "login":
-		assert.Equal(t, tc.loginCmd, command)
+	if !matchAtLeastOne(command, tc.commands) {
+		t.Fatalf("invalid command: %v", command)
 	}
 	os.Exit(0)
 }

@@ -19,12 +19,19 @@ type ImageBuildInfo struct {
 }
 
 type PackageBuildInfo struct {
-	ImageTag       string
-	CacheDir       string
-	SourcePath     string // source directory
-	OutputPath     string // destination: .tar file path
-	Runtime        string
+	ImageTag string
+	CacheDir string
+	// source directory
+	SourcePath string
+	// destination: .tar file path
+	OutputPath string
+	Runtime    string
+	// will default to "kubectl-package"
 	ExecutablePath string
+	// if set to `true`, built package won't be loaded into the runtime
+	NoRunTimeLoad bool
+	// package will be pushed directly using the PKO CLI and not the runtime
+	Push bool
 }
 
 type ImagePushInfo struct {
@@ -91,13 +98,21 @@ func BuildPackage(buildInfo *PackageBuildInfo, deps []interface{}) error {
 
 	buildArgs := []string{
 		executable, "build", "--tag", buildInfo.ImageTag,
-		"--output", buildInfo.OutputPath, buildInfo.SourcePath,
+		"--output", buildInfo.OutputPath,
 	}
-	importArgs := []string{
-		buildInfo.Runtime, "load", "--input", buildInfo.OutputPath,
+	if buildInfo.Push {
+		buildArgs = append(buildArgs, "--push")
+	}
+	buildArgs = append(buildArgs, buildInfo.SourcePath)
+
+	commands := [][]string{buildArgs}
+	if !buildInfo.NoRunTimeLoad {
+		commands = append(commands, []string{
+			buildInfo.Runtime, "load", "--input", buildInfo.OutputPath,
+		})
 	}
 
-	for _, args := range [][]string{buildArgs, importArgs} {
+	for _, args := range commands {
 		command := newExecCmd(args, buildInfo.CacheDir)
 		if err := command.Run(); err != nil {
 			return execError(args, err)
