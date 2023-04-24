@@ -140,8 +140,7 @@ func (w *Waiter) WaitForObject(
 	log.Info(fmt.Sprintf("waiting %s on %s %s %s...",
 		c.Timeout, gvk, key, waitReason))
 
-	return wait.PollImmediateWithContext(
-		ctx, c.Interval, c.Timeout,
+	return wait.PollUntilContextTimeout(ctx, c.Interval, c.Timeout, true,
 		func(ctx context.Context) (done bool, err error) {
 			err = w.client.Get(ctx, client.ObjectKeyFromObject(object), object)
 			if err != nil {
@@ -150,7 +149,8 @@ func (w *Waiter) WaitForObject(
 			}
 
 			return checkFn(object)
-		})
+		},
+	)
 }
 
 // Wait for an object to not exist anymore.
@@ -175,8 +175,8 @@ func (w *Waiter) WaitToBeGone(
 	log.Info(fmt.Sprintf("waiting %s for %s %s to be gone...",
 		c.Timeout, gvk, key))
 
-	return wait.PollImmediateWithContext(
-		ctx, c.Interval, c.Timeout,
+	return wait.PollUntilContextTimeout(
+		ctx, c.Interval, c.Timeout, true,
 		func(ctx context.Context) (done bool, err error) {
 			err = w.client.Get(ctx, client.ObjectKeyFromObject(object), object)
 			if errors.IsNotFound(err) {
@@ -188,7 +188,8 @@ func (w *Waiter) WaitToBeGone(
 			}
 
 			return checkFn(object)
-		})
+		},
+	)
 }
 
 // Check if a object condition is in a certain state.
