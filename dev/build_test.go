@@ -1,11 +1,12 @@
 package dev
 
 import (
-	"github.com/magefile/mage/mg"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"os/exec"
 	"testing"
+
+	"github.com/magefile/mage/mg"
+	"github.com/stretchr/testify/assert"
 )
 
 type buildImgTestCase struct {
@@ -151,7 +152,7 @@ func matchAtLeastOne(cmd []string, cmds [][]string) bool {
 func mockExecCommand(command string, args ...string) *exec.Cmd {
 	cs := []string{"-test.run=" + helperProcess, "--", command}
 	cs = append(cs, args...)
-	cmd := exec.Command(os.Args[0], cs...)
+	cmd := exec.Command(os.Args[0], cs...) //nolint:gosec // spooky parametic exec call.
 	cmd.Env = []string{
 		"GO_WANT_HELPER_PROCESS=1",
 		"GO_TEST_CASE_NAME=" + currentTestCase,
