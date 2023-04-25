@@ -75,6 +75,13 @@ func (Test) Lint() error {
 	return nil
 }
 
+// Runs integration tests
+func (Test) Integration() error {
+	return sh.RunWithV(map[string]string{
+		"CGO_ENABLED": "1",
+	}, "go", "test", "-cover", "-v", "-race", "./integration/...")
+}
+
 // Dependencies
 // ------------
 

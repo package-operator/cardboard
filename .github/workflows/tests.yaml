@@ -1,11 +1,11 @@
-name: unit-tests
+name: tests
 on:
   pull_request:
   push:
     branches:
       - main
 jobs:
-  lint-and-unit:
+  lint-unit-integration:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout
@@ -27,8 +27,17 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
+    - name: Install kubectl-package command
+      run: |
+        wget https://github.com/package-operator/package-operator/releases/download/v1.5.0/kubectl-package_linux_amd64
+        chmod +x kubectl-package_linux_amd64
+        sudo mv kubectl-package_linux_amd64 /bin/kubectl-package
+
     - name: Lint
       run: ./mage test:lint
 
     - name: Unit
       run: ./mage test:unit
+
+    - name: Integration
+      run: ./mage test:integration
