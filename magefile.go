@@ -87,8 +87,8 @@ func (Test) Integration() error {
 
 // Versions
 const (
-	goimportsVersion    = "0.8.0"
-	golangciLintVersion = "1.52.2"
+	goimportsVersion    = "0.11.1"
+	golangciLintVersion = "1.53.3"
 )
 
 type Dependency mg.Namespace
