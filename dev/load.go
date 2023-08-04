@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path"
 	"sort"
@@ -50,7 +49,7 @@ func LoadKubernetesObjectsFromFolder(folderPath string) ([]unstructured.Unstruct
 
 // Loads kubernetes objects from the given file.
 func LoadKubernetesObjectsFromFile(filePath string) ([]unstructured.Unstructured, error) {
-	fileYaml, err := ioutil.ReadFile(filePath)
+	fileYaml, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", filePath, err)
 	}

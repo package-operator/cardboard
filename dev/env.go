@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -134,7 +133,7 @@ func (env *Environment) Init(ctx context.Context) error {
 
 	kubeconfigPath := path.Join(env.WorkDir, "kubeconfig.yaml")
 	kindconfigPath := path.Join(env.WorkDir, "/kind.yaml")
-	if err := ioutil.WriteFile(
+	if err := os.WriteFile(
 		kindconfigPath, kindConfigYamlBytes, os.ModePerm); err != nil {
 		return fmt.Errorf("creating kind cluster config: %w", err)
 	}
