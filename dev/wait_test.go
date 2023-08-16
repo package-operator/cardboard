@@ -12,8 +12,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	aoapis "github.com/openshift/addon-operator/apis"
 )
 
 func TestWaiterConfig_Default(t *testing.T) {
@@ -52,7 +50,6 @@ func assertConfigDefaults(t *testing.T, c WaiterConfig) {
 func Test_checkObjectCondition(t *testing.T) {
 	scheme := runtime.NewScheme()
 	require.NoError(t, appsv1.AddToScheme(scheme))
-	require.NoError(t, aoapis.AddToScheme(scheme))
 
 	tests := []struct {
 		name   string
