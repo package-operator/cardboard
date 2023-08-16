@@ -9,6 +9,7 @@ import (
 	"sort"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
 )
 
@@ -90,3 +91,35 @@ func (x fileInfosByName) Less(i, j int) bool {
 }
 
 func (x fileInfosByName) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
+
+// LoadAndConvertIntoObject loads one Kubernetes object from a file into the out object.
+// It uses the `Convert` method of `scheme` under the hood, so it does any conversion
+// that method would do. LoadAndUnmarshalIntoObject provides similar functionality, without the
+// conversion aspect. LoadAndUnmarshalIntoObject should only be used when there is no available
+// scheme or when the user wants to explicitly block any conversions.
+func LoadAndConvertIntoObject(scheme *runtime.Scheme, filePath string, out interface{}) error {
+	objs, err := LoadKubernetesObjectsFromFile(filePath)
+	if err != nil {
+		return fmt.Errorf("loading object from file: %w", err)
+	}
+	if err := scheme.Convert(&objs[0], out, nil); err != nil {
+		return fmt.Errorf("converting: %w", err)
+	}
+	return nil
+}
+
+// LoadAndUnmarshalIntoObject loads one Kubernetes object from a file into the out object.
+// LoadAndUnmarshalIntoObject provides similar functionality, but uses `runtime.Scheme.Convert`
+// under the hood. LoadAndUnmarshalIntoObject should only be used when there is no available
+// scheme or when the user wants to explicitly block any conversions.
+func LoadAndUnmarshalIntoObject(filePath string, out interface{}) error {
+	obj, err := os.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("reading file: %w", err)
+	}
+
+	if err = yaml.Unmarshal(obj, &out); err != nil {
+		return err
+	}
+	return nil
+}
