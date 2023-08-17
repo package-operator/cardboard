@@ -1,0 +1,30 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: /
+  schedule:
+    interval: daily
+  allow:
+  - dependency-type: all
+    dependency-name: "*"
+  assignees: [ eqrx ]
+  reviewers: [ eqrx ]
+  open-pull-requests-limit: 100
+  labels: [ dependencies, ok-to-test]
+- package-ecosystem: gomod
+  directory: /apis
+  schedule:
+    interval: daily
+  allow:
+  - dependency-type: all
+    dependency-name: "*"
+  assignees: [ eqrx ]
+  reviewers: [ eqrx ]
+  open-pull-requests-limit: 100
+  labels: [ dependencies, ok-to-test]
+- package-ecosystem: github-actions
+  directory: /
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 100
+  labels: [ dependencies, ok-to-test]
