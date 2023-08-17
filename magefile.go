@@ -6,7 +6,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/magefile/mage/mg"
@@ -33,8 +33,8 @@ func init() {
 		panic(fmt.Errorf("getting work dir: %w", err))
 	}
 
-	depsDir = magedeps.DependencyDirectory(path.Join(workDir, ".deps"))
-	cacheDir = path.Join(workDir, ".cache")
+	depsDir = magedeps.DependencyDirectory(filepath.Join(workDir, ".deps"))
+	cacheDir = filepath.Join(workDir, ".cache")
 
 	// Path
 	os.Setenv("PATH", depsDir.Bin()+":"+os.Getenv("PATH"))
@@ -55,9 +55,12 @@ type Test mg.Namespace
 
 // Runs unittests.
 func (Test) Unit() error {
-	return sh.RunWithV(map[string]string{
-		"CGO_ENABLED": "1",
-	}, "go", "test", "-cover", "-v", "-race", "./dev/...", "./cmd/...", "./magedeps/...")
+	return sh.RunWithV(
+		map[string]string{"CGO_ENABLED": "1"},
+		"go", "test", "-v",
+		fmt.Sprintf("-coverprofile=%s", filepath.Join(cacheDir, "cov.out")), "-race",
+		"./dev/...", "./cmd/...", "./magedeps/...",
+	)
 }
 
 // Lints the source code.
