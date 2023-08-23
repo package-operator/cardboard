@@ -10,7 +10,7 @@ updates:
   assignees: [ eqrx ]
   reviewers: [ eqrx ]
   open-pull-requests-limit: 100
-  labels: [ dependencies, ok-to-test]
+  labels: [ dependencies ]
 - package-ecosystem: gomod
   directory: /apis
   schedule:
@@ -21,7 +21,7 @@ updates:
   assignees: [ eqrx ]
   reviewers: [ eqrx ]
   open-pull-requests-limit: 100
-  labels: [ dependencies, ok-to-test]
+  labels: [ dependencies ]
 - package-ecosystem: github-actions
   directory: /
   schedule:
