@@ -183,7 +183,7 @@ func (c *Cluster) CreateAndWaitFromHttp(
 
 	for i := range objects {
 		if err := c.CreateAndWaitForReadiness(ctx, &objects[i], opts...); err != nil {
-			return fmt.Errorf("creating object: %w", err)
+			return fmt.Errorf("creating from http: %w", err)
 		}
 	}
 	return nil
@@ -207,7 +207,7 @@ func (c *Cluster) CreateAndWaitFromFiles(
 
 	for i := range objects {
 		if err := c.CreateAndWaitForReadiness(ctx, &objects[i], opts...); err != nil {
-			return fmt.Errorf("creating object: %w", err)
+			return fmt.Errorf("creating from files: %w", err)
 		}
 	}
 	return nil
@@ -231,7 +231,7 @@ func (c *Cluster) CreateAndWaitFromFolders(
 
 	for i := range objects {
 		if err := c.CreateAndWaitForReadiness(ctx, &objects[i], opts...); err != nil {
-			return fmt.Errorf("creating object: %w", err)
+			return fmt.Errorf("creating from folders: %w", err)
 		}
 	}
 	return nil
@@ -244,7 +244,12 @@ func (c *Cluster) CreateAndWaitForReadiness(
 ) error {
 	if err := c.CtrlClient.Create(ctx, object); err != nil &&
 		!errors.IsAlreadyExists(err) {
-		return fmt.Errorf("creating object: %w", err)
+		gvk := object.GetObjectKind().GroupVersionKind()
+		return fmt.Errorf("creating object: %s/%s/%s %s/%s: %w",
+			gvk.Group,
+			gvk.Version,
+			gvk.Kind,
+			object.GetNamespace(), object.GetName(), err)
 	}
 
 	if err := c.Waiter.WaitForReadiness(ctx, object); err != nil {
