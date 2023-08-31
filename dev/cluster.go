@@ -181,12 +181,7 @@ func (c *Cluster) CreateAndWaitFromHttp(
 		objects = append(objects, objs...)
 	}
 
-	for i := range objects {
-		if err := c.CreateAndWaitForReadiness(ctx, &objects[i], opts...); err != nil {
-			return fmt.Errorf("creating object: %w", err)
-		}
-	}
-	return nil
+	return c.createObjectsFromSource(ctx, "http", objects)
 }
 
 // Load kube objects from a list of files,
@@ -205,12 +200,7 @@ func (c *Cluster) CreateAndWaitFromFiles(
 		objects = append(objects, objs...)
 	}
 
-	for i := range objects {
-		if err := c.CreateAndWaitForReadiness(ctx, &objects[i], opts...); err != nil {
-			return fmt.Errorf("creating object: %w", err)
-		}
-	}
-	return nil
+	return c.createObjectsFromSource(ctx, "files", objects)
 }
 
 // Load kube objects from a list of folders,
@@ -229,9 +219,13 @@ func (c *Cluster) CreateAndWaitFromFolders(
 		objects = append(objects, objs...)
 	}
 
+	return c.createObjectsFromSource(ctx, "folders", objects)
+}
+
+func (c *Cluster) createObjectsFromSource(ctx context.Context, source string, objects []unstructured.Unstructured, opts ...WaitOption) error {
 	for i := range objects {
 		if err := c.CreateAndWaitForReadiness(ctx, &objects[i], opts...); err != nil {
-			return fmt.Errorf("creating object: %w", err)
+			return fmt.Errorf("creating from %s: %w", source, err)
 		}
 	}
 	return nil
@@ -244,10 +238,15 @@ func (c *Cluster) CreateAndWaitForReadiness(
 ) error {
 	if err := c.CtrlClient.Create(ctx, object); err != nil &&
 		!errors.IsAlreadyExists(err) {
-		return fmt.Errorf("creating object: %w", err)
+		gvk := object.GetObjectKind().GroupVersionKind()
+		return fmt.Errorf("creating object: %s/%s/%s %s/%s: %w",
+			gvk.Group,
+			gvk.Version,
+			gvk.Kind,
+			object.GetNamespace(), object.GetName(), err)
 	}
 
-	if err := c.Waiter.WaitForReadiness(ctx, object); err != nil {
+	if err := c.Waiter.WaitForReadiness(ctx, object, opts...); err != nil {
 		var unknownTypeErr *UnknownTypeError
 		if goerrors.As(err, &unknownTypeErr) {
 			// A lot of types don't require waiting for readiness,
