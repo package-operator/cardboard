@@ -181,12 +181,7 @@ func (c *Cluster) CreateAndWaitFromHttp(
 		objects = append(objects, objs...)
 	}
 
-	for i := range objects {
-		if err := c.CreateAndWaitForReadiness(ctx, &objects[i], opts...); err != nil {
-			return fmt.Errorf("creating from http: %w", err)
-		}
-	}
-	return nil
+	return c.createObjectsFromSource(ctx, "http", objects)
 }
 
 // Load kube objects from a list of files,
@@ -205,12 +200,7 @@ func (c *Cluster) CreateAndWaitFromFiles(
 		objects = append(objects, objs...)
 	}
 
-	for i := range objects {
-		if err := c.CreateAndWaitForReadiness(ctx, &objects[i], opts...); err != nil {
-			return fmt.Errorf("creating from files: %w", err)
-		}
-	}
-	return nil
+	return c.createObjectsFromSource(ctx, "files", objects)
 }
 
 // Load kube objects from a list of folders,
@@ -229,9 +219,13 @@ func (c *Cluster) CreateAndWaitFromFolders(
 		objects = append(objects, objs...)
 	}
 
+	return c.createObjectsFromSource(ctx, "folders", objects)
+}
+
+func (c *Cluster) createObjectsFromSource(ctx context.Context, source string, objects []unstructured.Unstructured, opts ...WaitOption) error {
 	for i := range objects {
 		if err := c.CreateAndWaitForReadiness(ctx, &objects[i], opts...); err != nil {
-			return fmt.Errorf("creating from folders: %w", err)
+			return fmt.Errorf("creating from %s: %w", source, err)
 		}
 	}
 	return nil
