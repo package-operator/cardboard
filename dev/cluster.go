@@ -246,7 +246,7 @@ func (c *Cluster) CreateAndWaitForReadiness(
 			object.GetNamespace(), object.GetName(), err)
 	}
 
-	if err := c.Waiter.WaitForReadiness(ctx, object); err != nil {
+	if err := c.Waiter.WaitForReadiness(ctx, object, opts...); err != nil {
 		var unknownTypeErr *UnknownTypeError
 		if goerrors.As(err, &unknownTypeErr) {
 			// A lot of types don't require waiting for readiness,
