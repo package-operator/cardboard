@@ -10,6 +10,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// Run a function with access to the cluster object. Can be used to directly interact with the cluster.
+type ClusterInitFn func(ctx context.Context, cluster *Cluster) error
+
+func (fn ClusterInitFn) Init(ctx context.Context, cl *Cluster) error {
+	return fn(ctx, cl)
+}
+
 // Load objects from given folder paths and applies them into the cluster.
 type ClusterLoadObjectsFromFolders []string
 
