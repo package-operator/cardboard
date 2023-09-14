@@ -6,10 +6,10 @@ require (
 	github.com/go-logr/logr v1.2.4
 	github.com/magefile/mage v1.15.0
 	github.com/stretchr/testify v1.8.4
-	k8s.io/api v0.28.1
+	k8s.io/api v0.28.2
 	k8s.io/apiextensions-apiserver v0.28.1
 	k8s.io/apimachinery v0.28.2
-	k8s.io/client-go v0.28.1
+	k8s.io/client-go v0.28.2
 	sigs.k8s.io/controller-runtime v0.16.2
 	sigs.k8s.io/kind v0.20.0
 	sigs.k8s.io/yaml v1.3.0
