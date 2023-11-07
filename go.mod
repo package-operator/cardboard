@@ -1,6 +1,6 @@
 module github.com/mt-sre/devkube
 
-go 1.20
+go 1.21.4
 
 require (
 	github.com/go-logr/logr v1.3.0
