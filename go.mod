@@ -3,7 +3,7 @@ module github.com/mt-sre/devkube
 go 1.21.4
 
 require (
-	github.com/go-logr/logr v1.3.0
+	github.com/go-logr/logr v1.4.1
 	github.com/magefile/mage v1.15.0
 	github.com/stretchr/testify v1.8.4
 	k8s.io/api v0.28.4
