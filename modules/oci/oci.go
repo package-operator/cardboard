@@ -3,6 +3,7 @@ package modules
 import (
 	"fmt"
 
+	"pkg.package-operator.run/cardboard/kubeutils"
 	"pkg.package-operator.run/cardboard/run"
 	"pkg.package-operator.run/cardboard/sh"
 )
@@ -23,7 +24,7 @@ type OCI struct {
 	tags             []string
 	containerFile    string
 	workDir          string
-	containerRuntime ContainerRuntime
+	containerRuntime kubeutils.ContainerRuntime
 	runner           shRunner
 }
 
@@ -118,7 +119,7 @@ func (oci *OCI) Push() error {
 	tags := registryNameTags(oci.name, oci.registries, oci.tags)
 	for _, t := range tags {
 		args := []string{"push"}
-		if cr == ContainerRuntimePodman {
+		if cr == kubeutils.ContainerRuntimePodman {
 			args = append(args, "--digestfile="+ociDigestFile)
 		}
 		args = append(args, t)

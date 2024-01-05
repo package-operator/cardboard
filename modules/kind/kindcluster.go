@@ -1,4 +1,4 @@
-package modules
+package kind
 
 import (
 	"context"
@@ -14,59 +14,63 @@ import (
 	kindcmd "sigs.k8s.io/kind/pkg/cmd"
 	"sigs.k8s.io/yaml"
 
+	"pkg.package-operator.run/cardboard/kubeutils"
+	"pkg.package-operator.run/cardboard/modules/kubeclients"
 	"pkg.package-operator.run/cardboard/run"
 )
 
-type KindCluster struct {
-	name, workDir     string
-	kubeconfigPath    string
-	containerRuntime  ContainerRuntime
-	kindClusterConfig *kindv1alpha4.Cluster
+const defaultCacheDirectory = ".cache"
 
-	clients  *KubeClients
+type Cluster struct {
+	name, workDir    string
+	kubeconfigPath   string
+	containerRuntime kubeutils.ContainerRuntime
+	clusterConfig    *kindv1alpha4.Cluster
+
+	clients  *kubeclients.KubeClients
 	provider *cluster.Provider
 }
 
-type KindClusterOption interface {
-	ApplyToKindCluster(kc *KindCluster)
+type ClusterOption interface {
+	ApplyToCluster(kc *Cluster)
 }
 
-func NewKindCluster(name string, opts ...KindClusterOption) *KindCluster {
-	kc := &KindCluster{
+func NewCluster(name string, opts ...ClusterOption) *Cluster {
+	kc := &Cluster{
 		name:    name,
 		workDir: filepath.Join(defaultCacheDirectory, "clusters", name),
 	}
 	kc.kubeconfigPath = filepath.Join(kc.workDir, "kubeconfig.yaml")
 	for _, opt := range opts {
-		opt.ApplyToKindCluster(kc)
+		opt.ApplyToCluster(kc)
 	}
-	if kc.kindClusterConfig == nil {
-		kc.kindClusterConfig = &kindv1alpha4.Cluster{}
+	if kc.clusterConfig == nil {
+		kc.clusterConfig = &kindv1alpha4.Cluster{}
 	}
-	sanitizeKindClusterConfig(kc.kindClusterConfig)
-	defaultKindClusterConfig(kc.kindClusterConfig)
+	sanitizeClusterConfig(kc.clusterConfig)
+	defaultClusterConfig(kc.clusterConfig)
 	return kc
 }
 
-func (c *KindCluster) KubeconfigPath() string {
+func (c *Cluster) KubeconfigPath() string {
 	return c.kubeconfigPath
 }
 
-func (c *KindCluster) ID() string {
-	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules.KindCluster{name:%s}", c.name)
+func (c *Cluster) ID() string {
+	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules.Cluster{name:%s}", c.name)
 }
 
 // Check if the cluster already exists.
-func (c *KindCluster) Exists() (bool, error) {
+func (c *Cluster) Exists() (bool, error) {
 	provider, err := c.getKindProvider()
 	if err != nil {
 		return false, err
 	}
-	existingKindClusters, err := provider.List()
+	existingClusters, err := provider.List()
 	if err != nil {
 		return false, fmt.Errorf("failed to fetch the existing KinD clusters: %w", err)
 	}
-	for _, cluster := range existingKindClusters {
+	for _, cluster := range existingClusters {
 		if c.name == cluster {
 			return true, nil
 		}
@@ -74,11 +78,11 @@ func (c *KindCluster) Exists() (bool, error) {
 	return false, nil
 }
 
-func (c *KindCluster) Clients() (*KubeClients, error) {
+func (c *Cluster) Clients() (*kubeclients.KubeClients, error) {
 	if c.clients != nil {
 		return c.clients, nil
 	}
-	c.clients = NewKubeClients(c.kubeconfigPath)
+	c.clients = kubeclients.NewKubeClients(c.kubeconfigPath)
 	if err := c.clients.Run(context.Background()); err != nil {
 		return nil, err
 	}
@@ -86,17 +90,17 @@ func (c *KindCluster) Clients() (*KubeClients, error) {
 }
 
 // Returns a Create dependency for stetting up pre-requisites.
-func (c *KindCluster) CreateDep() run.Dependency {
+func (c *Cluster) CreateDep() run.Dependency {
 	return run.Meth(c, c.Create)
 }
 
 // Returns a Destroy dependency for stetting up pre-requisites.
-func (c *KindCluster) DestroyDep() run.Dependency {
+func (c *Cluster) DestroyDep() run.Dependency {
 	return run.Meth(c, c.Destroy)
 }
 
 // Creates the KinD cluster if it does not exist.
-func (c *KindCluster) Create() error {
+func (c *Cluster) Create() error {
 	var err error
 	c.containerRuntime, err = c.containerRuntime.Get()
 	if err != nil {
@@ -106,7 +110,7 @@ func (c *KindCluster) Create() error {
 	if err := os.MkdirAll(c.workDir, os.ModePerm); err != nil {
 		return fmt.Errorf("creating workdir: %w", err)
 	}
-	kindConfigYamlBytes, err := yaml.Marshal(c.kindClusterConfig)
+	kindConfigYamlBytes, err := yaml.Marshal(c.clusterConfig)
 	if err != nil {
 		return fmt.Errorf("failed to process the KinD cluster config as a YAML: %w", err)
 	}
@@ -143,7 +147,7 @@ func (c *KindCluster) Create() error {
 }
 
 // Destroys the KinD cluster if it exists.
-func (c *KindCluster) Destroy() error {
+func (c *Cluster) Destroy() error {
 	provider, err := c.getKindProvider()
 	if err != nil {
 		return err
@@ -152,7 +156,7 @@ func (c *KindCluster) Destroy() error {
 }
 
 // Load an image from a tar archive into the environment.
-func (c *KindCluster) LoadImageFromTar(filePath string) error {
+func (c *Cluster) LoadImageFromTar(filePath string) error {
 	provider, err := c.getKindProvider()
 	if err != nil {
 		return err
@@ -175,16 +179,16 @@ func (c *KindCluster) LoadImageFromTar(filePath string) error {
 	return nil
 }
 
-func (c *KindCluster) getKindProvider() (cluster.Provider, error) {
+func (c *Cluster) getKindProvider() (cluster.Provider, error) {
 	if c.provider != nil {
 		return *c.provider, nil
 	}
 
 	var providerOpt cluster.ProviderOption
 	switch c.containerRuntime {
-	case ContainerRuntimeDocker:
+	case kubeutils.ContainerRuntimeDocker:
 		providerOpt = cluster.ProviderWithDocker()
-	case ContainerRuntimePodman:
+	case kubeutils.ContainerRuntimePodman:
 		providerOpt = cluster.ProviderWithPodman()
 	}
 	logger := kindcmd.NewLogger()
@@ -203,14 +207,14 @@ func loadImageTarIntoNode(imageTarPath string, node nodes.Node) error {
 	return nodeutils.LoadImageArchive(node, f)
 }
 
-func sanitizeKindClusterConfig(conf *kindv1alpha4.Cluster) {
+func sanitizeClusterConfig(conf *kindv1alpha4.Cluster) {
 	conf.TypeMeta = kindv1alpha4.TypeMeta{
 		Kind:       "Cluster",
 		APIVersion: "kind.x-k8s.io/v1alpha4",
 	}
 }
 
-func defaultKindClusterConfig(conf *kindv1alpha4.Cluster) {
+func defaultClusterConfig(conf *kindv1alpha4.Cluster) {
 	kindv1alpha4.SetDefaultsCluster(conf)
 	if _, err := os.Lstat("/dev/dm-0"); err == nil {
 		for i := range conf.Nodes {
