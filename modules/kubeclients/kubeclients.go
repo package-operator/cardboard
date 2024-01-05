@@ -1,4 +1,4 @@
-package modules
+package kubeclients
 
 import (
 	"bytes"
@@ -17,8 +17,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"pkg.package-operator.run/cardboard/kubemanifests"
-	"pkg.package-operator.run/cardboard/wait"
+	"pkg.package-operator.run/cardboard/kubeutils/kubemanifests"
+	"pkg.package-operator.run/cardboard/kubeutils/wait"
 )
 
 // Creates a bunch of useful kubernetes client interfaces to interact with clusters.

@@ -1,4 +1,4 @@
-package modules
+package kubeutils
 
 import (
 	"errors"

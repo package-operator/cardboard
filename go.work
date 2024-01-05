@@ -1,0 +1,9 @@
+go 1.21.1
+
+use (
+	.
+	./kubeutils
+	./modules/kind
+	./modules/kubeclients
+	./modules/oci
+)

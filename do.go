@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"strings"
 
-	"pkg.package-operator.run/cardboard/modules"
+	"pkg.package-operator.run/cardboard/modules/kind"
 	"pkg.package-operator.run/cardboard/run"
 	"pkg.package-operator.run/cardboard/sh"
 )
 
 var (
-	cluster = modules.NewKindCluster("banana")
+	cluster = kind.NewCluster("banana")
 	mgr     *run.Manager
 )
 
