@@ -468,7 +468,7 @@ type selfIdentifier interface {
 func methID(thing, fn any, args ...any) string {
 	sid := structID(thing)
 	fid := funcID(fn, args...)
-	fid = fid[strings.LastIndex(fid, ".")+1:]
+	fid = fid[strings.LastIndex(fid, ").")+2:]
 	return fmt.Sprintf("%s.%s", sid, fid)
 }
 
