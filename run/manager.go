@@ -151,11 +151,7 @@ func (m *Manager) Call(ctx context.Context, id string, args []string) (err error
 	if !ok {
 		return &UnknownTargetError{ID: id}
 	}
-	targetArgs := []string{} // must be non-nil or the generated ID does not match when no args are given.
-	if len(args) > 2 {
-		targetArgs = args[2:]
-	}
-	return m.dr.Serial(ctx, DependencyID("."), FnWithName(target.idWithArgs(targetArgs), func() error {
+	return m.dr.Serial(ctx, DependencyID("."), FnWithName(target.idWithArgs(args), func() error {
 		return target.run(ctx, args)
 	}))
 }
