@@ -41,30 +41,30 @@ func (r *Runner) apply(opts ...RunnerOption) {
 	for _, opt := range opts {
 		opt.ApplyToRunner(r)
 	}
-	if r.logger == nil {
-		r.logger = slog.Default()
-	}
-	if r.stdout == nil {
-		r.stdout = os.Stdout
-	}
-	if r.stderr == nil {
-		r.stderr = os.Stderr
-	}
 }
 
 func (r *Runner) Run(cmd string, args ...string) error {
-	return r.run(r.stdout, r.stderr, nil, cmd, args...)
+	return r.run(outOrStdoutIfNil(r.stdout), outOrStderrIfNil(r.stderr), nil, cmd, args...)
 }
 
-func (r *Runner) Bash(script []string) error {
+func (r *Runner) Bash(script ...string) error {
 	scriptBuf := bytes.NewBufferString(strings.Join(script, "\n"))
-	return r.run(r.stdout, r.stderr, scriptBuf, "bash")
+	return r.run(outOrStdoutIfNil(r.stdout), outOrStderrIfNil(r.stderr), scriptBuf, "bash")
 }
 
 func (r *Runner) Output(cmd string, args ...string) (string, error) {
 	var out bytes.Buffer
-	err := r.run(&out, r.stderr, nil, cmd, args...)
+	err := r.run(&out, outOrStderrIfNil(r.stderr), nil, cmd, args...)
 	return strings.TrimRight(out.String(), "\n"), err
+}
+
+func (r *Runner) Copy(dst, src string) error {
+	data, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(dst, data, 0o644)
 }
 
 func (r *Runner) run(stdout, stderr io.Writer, stdin io.Reader, cmd string, args ...string) error {
@@ -84,7 +84,9 @@ func (r *Runner) run(stdout, stderr io.Writer, stdin io.Reader, cmd string, args
 	c.Stderr = stderr
 	c.Dir = r.workDir
 
-	r.logger.Info("exec", slog.String("cmd", cmd), slog.String("args", strings.Join(args, ", ")))
+	if r.logger != nil {
+		r.logger.Info("exec", slog.String("cmd", cmd), slog.String("args", strings.Join(args, ", ")))
+	}
 
 	err := c.Run()
 	if err == nil {

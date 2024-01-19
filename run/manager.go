@@ -173,8 +173,18 @@ func (m *Manager) RegisterGoTool(tool, packageURL, version string) error {
 	return m.dm.Register(tool, packageURL, version)
 }
 
-func (m *Manager) MustRegisterAndRun(things ...any) {
-	ctx := context.Background()
+func (m *Manager) RegisterAndRun(ctx context.Context, things ...any) error {
+	if err := m.registerAll(things...); err != nil {
+		return err
+	}
+	if err := m.Run(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Manager) MustRegisterAndRun(ctx context.Context, things ...any) {
 	if err := m.registerAll(things...); err != nil {
 		m.logger.Error(err.Error())
 		os.Exit(1)
@@ -233,10 +243,7 @@ func (m *Manager) printHelp() error {
 
 func (m *Manager) run(ctx context.Context) error {
 	args := os.Args
-	if len(args) < 2 {
-		return fmt.Errorf("unexpected number of arguments")
-	}
-	if args[1] == "help" {
+	if len(args) < 2 || args[1] == "help" {
 		return m.printHelp()
 	}
 
@@ -271,10 +278,22 @@ func (m *Manager) registerAll(things ...any) error {
 	return nil
 }
 
+func deref(t reflect.Type) reflect.Type {
+	if t.Kind() == reflect.Pointer {
+		t = deref(t.Elem())
+	}
+
+	if t.Kind() != reflect.Struct {
+		panic(fmt.Errorf("unsupported target type: %s", t.Kind()))
+	}
+
+	return t
+}
+
 func (m *Manager) register(thing any) error {
-	thingType := reflect.TypeOf(thing)
+	thingType := deref(reflect.TypeOf(thing))
 	thingValue := reflect.ValueOf(thing)
-	typeID := thingType.Elem().Name()
+	typeID := thingType.Name()
 	for i := 0; i < thingType.NumMethod(); i++ {
 		method := thingType.Method(i)
 		if !method.IsExported() {
@@ -291,7 +310,7 @@ func (m *Manager) register(thing any) error {
 			!(method.Type.Out(0).String() == "error") {
 			return fmt.Errorf(
 				"%s.%s() must have signature like func(context.Context, []string) error",
-				thingType.Elem().Name(), method.Name)
+				typeID, method.Name)
 		}
 
 		methV := thingValue.MethodByName(method.Name)
@@ -346,8 +365,12 @@ func commentsFromSource(source embed.FS) (*doc.Package, error) {
 			continue
 		}
 
-		astFile, err := parser.ParseFile(
-			fileSet, entry.Name(), nil, parser.ParseComments)
+		data, err := source.ReadFile(entry.Name())
+		if err != nil {
+			return nil, fmt.Errorf("read embedded source: %w", err)
+		}
+
+		astFile, err := parser.ParseFile(fileSet, entry.Name(), data, parser.ParseComments)
 		if err != nil {
 			return nil, fmt.Errorf("parse AST: %w", err)
 		}

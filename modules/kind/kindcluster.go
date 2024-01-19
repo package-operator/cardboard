@@ -70,6 +70,7 @@ func (c *Cluster) Exists() (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed to fetch the existing KinD clusters: %w", err)
 	}
+
 	for _, cluster := range existingClusters {
 		if c.name == cluster {
 			return true, nil
@@ -131,7 +132,7 @@ func (c *Cluster) Create() error {
 	if err != nil {
 		return fmt.Errorf("checking cluster exists: %w", err)
 	}
-	if clusterExists {
+	if !clusterExists {
 		if err := provider.Create(c.name,
 			cluster.CreateWithKubeconfigPath(c.kubeconfigPath),
 			cluster.CreateWithConfigFile(kindconfigPath),

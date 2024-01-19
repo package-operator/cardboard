@@ -7,13 +7,13 @@ import (
 
 type WithContainerRuntime kubeutils.ContainerRuntime
 
-func (cr WithContainerRuntime) ApplyToKindCluster(kc *Cluster) {
+func (cr WithContainerRuntime) ApplyToCluster(kc *Cluster) {
 	kc.containerRuntime = kubeutils.ContainerRuntime(cr)
 }
 
 type WithClusterConfig kindv1alpha4.Cluster
 
-func (opts WithClusterConfig) ApplyToKindCluster(kc *Cluster) {
+func (opts WithClusterConfig) ApplyToCluster(kc *Cluster) {
 	config := kindv1alpha4.Cluster(opts)
 	kc.clusterConfig = &config
 }
