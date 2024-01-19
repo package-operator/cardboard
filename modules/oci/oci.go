@@ -1,4 +1,4 @@
-package modules
+package oci
 
 import (
 	"fmt"

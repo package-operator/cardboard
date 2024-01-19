@@ -3,6 +3,7 @@ package sh
 import (
 	"io"
 	"log/slog"
+	"os"
 )
 
 type RunnerOption interface {
@@ -37,4 +38,27 @@ type WithStderr struct{ io.Writer }
 
 func (stderr WithStderr) ApplyToRunner(r *Runner) {
 	r.stderr = stderr.Writer
+}
+
+type WithCombinedOutput struct{ io.Writer }
+
+func (out WithCombinedOutput) ApplyToRunner(r *Runner) {
+	r.stderr = out
+	r.stdout = out
+}
+
+func outOrStdoutIfNil(out io.Writer) io.Writer {
+	if out != nil {
+		return out
+	}
+
+	return os.Stdout
+}
+
+func outOrStderrIfNil(out io.Writer) io.Writer {
+	if out != nil {
+		return out
+	}
+
+	return os.Stderr
 }

@@ -16,9 +16,11 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	"pkg.package-operator.run/cardboard/kubeutils/kubemanifests"
 	"pkg.package-operator.run/cardboard/kubeutils/wait"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // Creates a bunch of useful kubernetes client interfaces to interact with clusters.
@@ -30,6 +32,10 @@ type KubeClients struct {
 	Waiter     *wait.Waiter
 
 	kubeconfigPath string
+}
+
+func init() {
+	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 }
 
 var defaultSchemeBuilder runtime.SchemeBuilder = runtime.SchemeBuilder{
@@ -70,6 +76,7 @@ func (kc *KubeClients) Run(_ context.Context) error {
 	kc.CtrlClient, err = client.New(kc.RestConfig, client.Options{
 		Scheme: kc.Scheme,
 	})
+
 	if err != nil {
 		return fmt.Errorf("creating new ctrl client: %w", err)
 	}

@@ -21,12 +21,11 @@ var (
 var source embed.FS
 
 func main() {
+	ctx := context.Background()
 	mgr = run.New(run.WithSources(source))
-	run.Must(
-		mgr.RegisterGoTool("gotestfmt",
-			"github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt", "2.5.0"))
+	run.Must(mgr.RegisterGoTool("gotestfmt", "github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt", "2.5.0"))
 
-	mgr.MustRegisterAndRun(&Test{})
+	mgr.MustRegisterAndRun(ctx, &Test{})
 }
 
 type Test struct{}
@@ -76,10 +75,8 @@ func (t *Test) Unit(_ context.Context, args []string) error {
 		gotestArgs = append(gotestArgs, "-run="+args[0])
 	}
 
-	return sh.New(sh.WithEnvironment{
-		"CGO_ENABLED": "1",
-	}).Bash([]string{
+	return sh.New(sh.WithEnvironment{"CGO_ENABLED": "1"}).Bash(
 		"set -euo pipefail",
-		"go test " + strings.Join(gotestArgs, " ") + " ./... 2>&1 | tee gotest.log | gotestfmt --hide=empty-packages",
-	})
+		"go test "+strings.Join(gotestArgs, " ")+" ./... 2>&1 | tee gotest.log | gotestfmt --hide=empty-packages",
+	)
 }
