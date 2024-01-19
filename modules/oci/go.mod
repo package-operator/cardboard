@@ -1,6 +1,6 @@
 module pkg.package-operator.run/cardboard/modules/oci
 
-go 1.21.1
+go 1.21
 
 require (
 	pkg.package-operator.run/cardboard v0.0.0-00010101000000-000000000000
@@ -13,7 +13,7 @@ replace (
 )
 
 require (
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/sys v0.16.0 // indirect
 )
