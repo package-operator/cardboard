@@ -54,6 +54,15 @@ func NewCluster(name string, opts ...ClusterOption) *Cluster {
 	return kc
 }
 
+func (c *Cluster) Kubeconfig(internal bool) (string, error) {
+	provider, err := c.getKindProvider()
+	if err != nil {
+		return "", err
+	}
+
+	return provider.KubeConfig(c.name, internal)
+}
+
 func (c *Cluster) KubeconfigPath() (string, error) {
 	return filepath.Abs(c.kubeconfigPath)
 }
