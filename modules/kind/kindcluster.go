@@ -61,6 +61,17 @@ func (c *Cluster) ID() string {
 	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules.Cluster{name:%s}", c.name)
 }
 
+func (c *Cluster) Name() string { return c.name }
+
+func (c *Cluster) ExportLogs(path string) error {
+	provider, err := c.getKindProvider()
+	if err != nil {
+		return err
+	}
+
+	return provider.CollectLogs(c.name, path)
+}
+
 // Check if the cluster already exists.
 func (c *Cluster) Exists() (bool, error) {
 	provider, err := c.getKindProvider()
