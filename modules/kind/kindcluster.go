@@ -27,9 +27,10 @@ type Cluster struct {
 	containerRuntime kubeutils.ContainerRuntime
 	clusterConfig    *kindv1alpha4.Cluster
 
-	clients      *kubeclients.KubeClients
-	provider     *cluster.Provider
-	initializers []ClusterInitializer
+	clients            *kubeclients.KubeClients
+	kubeClientsOptions []kubeclients.KubeClientsOption
+	provider           *cluster.Provider
+	initializers       []ClusterInitializer
 }
 
 type ClusterOption interface {
@@ -95,7 +96,7 @@ func (c *Cluster) Clients() (*kubeclients.KubeClients, error) {
 	if c.clients != nil {
 		return c.clients, nil
 	}
-	c.clients = kubeclients.NewKubeClients(c.kubeconfigPath)
+	c.clients = kubeclients.NewKubeClients(c.kubeconfigPath, c.kubeClientsOptions...)
 	if err := c.clients.Run(context.Background()); err != nil {
 		return nil, err
 	}

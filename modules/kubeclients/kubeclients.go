@@ -31,6 +31,7 @@ type KubeClients struct {
 	CtrlClient client.Client
 	Waiter     *wait.Waiter
 
+	schemeBuilder  runtime.SchemeBuilder
 	kubeconfigPath string
 }
 
@@ -41,6 +42,12 @@ func init() {
 var defaultSchemeBuilder runtime.SchemeBuilder = runtime.SchemeBuilder{
 	clientgoscheme.AddToScheme,
 	apiextensionsv1.AddToScheme,
+}
+
+type WithSchemeBuilder []func(*runtime.Scheme) error
+
+func (sb WithSchemeBuilder) ApplyToKubeClients(kc *KubeClients) {
+	kc.schemeBuilder = runtime.SchemeBuilder(sb)
 }
 
 type KubeClientsOption interface {
@@ -63,6 +70,12 @@ func (kc *KubeClients) Run(_ context.Context) error {
 	// Add default schemes
 	if err := defaultSchemeBuilder.AddToScheme(kc.Scheme); err != nil {
 		return fmt.Errorf("adding defaults to scheme: %w", err)
+	}
+	// Add schemes from config
+	if kc.schemeBuilder != nil {
+		if err := kc.schemeBuilder.AddToScheme(kc.Scheme); err != nil {
+			return fmt.Errorf("adding defaults to scheme: %w", err)
+		}
 	}
 
 	var err error
