@@ -65,6 +65,17 @@ func NewOCI(name, workDir string, opts ...OCIOption) *OCI {
 	return oci
 }
 
+func Load(path string) error {
+	cr, err := kubeutils.DetectContainerRuntime()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(path)
+
+	return sh.New().Run(string(cr), "load", "-i", path)
+}
+
 func (oci *OCI) ID() string {
 	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules.OCI{name:%s}", oci.name)
 }
