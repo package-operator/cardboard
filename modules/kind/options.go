@@ -23,6 +23,10 @@ func (opts WithClusterConfig) ApplyToCluster(kc *Cluster) {
 
 type WithClusterInitializers []ClusterInitializer
 
+func (opts WithClusterInitializers) ApplyToCluster(kc *Cluster) {
+	kc.initializers = []ClusterInitializer(opts)
+}
+
 type ClusterInitializer interface {
 	Init(ctx context.Context, cluster *Cluster) error
 }
