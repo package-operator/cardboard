@@ -54,8 +54,8 @@ func NewCluster(name string, opts ...ClusterOption) *Cluster {
 	return kc
 }
 
-func (c *Cluster) KubeconfigPath() string {
-	return c.kubeconfigPath
+func (c *Cluster) KubeconfigPath() (string, error) {
+	return filepath.Abs(c.kubeconfigPath)
 }
 
 func (c *Cluster) ID() string {
