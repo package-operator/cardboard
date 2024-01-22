@@ -28,6 +28,7 @@ func main() {
 	mgr.MustRegisterAndRun(ctx, &Test{})
 }
 
+// Unit, Integration and other test related targets.
 type Test struct{}
 
 func (t *Test) testErrDeepDep() error {
