@@ -551,7 +551,7 @@ func (o *depOnce) Run(ctx context.Context) error {
 				o.err = mustErr
 				return
 			}
-			o.err = &CallPanicedError{
+			o.err = &internalPanicedError{
 				Obj:   a,
 				Stack: string(debug.Stack()),
 			}
