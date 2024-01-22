@@ -27,8 +27,9 @@ type Cluster struct {
 	containerRuntime kubeutils.ContainerRuntime
 	clusterConfig    *kindv1alpha4.Cluster
 
-	clients  *kubeclients.KubeClients
-	provider *cluster.Provider
+	clients      *kubeclients.KubeClients
+	provider     *cluster.Provider
+	initializers []ClusterInitializer
 }
 
 type ClusterOption interface {
@@ -101,7 +102,7 @@ func (c *Cluster) DestroyDep() run.Dependency {
 }
 
 // Creates the KinD cluster if it does not exist.
-func (c *Cluster) Create() error {
+func (c *Cluster) Create(ctx context.Context) error {
 	var err error
 	c.containerRuntime, err = c.containerRuntime.Get()
 	if err != nil {
@@ -144,11 +145,20 @@ func (c *Cluster) Create() error {
 			return fmt.Errorf("failed to create the cluster: %w", err)
 		}
 	}
+
+	if _, err := c.Clients(); err != nil {
+		return err
+	}
+	for _, init := range c.initializers {
+		if err := init.Init(ctx, c); err != nil {
+			return fmt.Errorf("initializing cluster: %w", err)
+		}
+	}
 	return nil
 }
 
 // Destroys the KinD cluster if it exists.
-func (c *Cluster) Destroy() error {
+func (c *Cluster) Destroy(_ context.Context) error {
 	provider, err := c.getKindProvider()
 	if err != nil {
 		return err
