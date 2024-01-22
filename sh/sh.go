@@ -64,7 +64,12 @@ func (r *Runner) Copy(dst, src string) error {
 		return err
 	}
 
-	return os.WriteFile(dst, data, 0o644)
+	info, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(dst, data, info.Mode().Perm())
 }
 
 func (r *Runner) run(stdout, stderr io.Writer, stdin io.Reader, cmd string, args ...string) error {
