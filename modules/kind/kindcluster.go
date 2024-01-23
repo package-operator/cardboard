@@ -16,7 +16,6 @@ import (
 
 	"pkg.package-operator.run/cardboard/kubeutils"
 	"pkg.package-operator.run/cardboard/modules/kubeclients"
-	"pkg.package-operator.run/cardboard/run"
 )
 
 const defaultCacheDirectory = ".cache"
@@ -114,8 +113,8 @@ func (c *Cluster) Clients() (*kubeclients.KubeClients, error) {
 }
 
 // Returns a Create dependency to ensure the cluster is setup.
-func (c *Cluster) Run(_ context.Context) run.Dependency {
-	return run.Meth(c, c.Create)
+func (c *Cluster) Run(ctx context.Context) error {
+	return c.Create(ctx)
 }
 
 // Creates the KinD cluster if it does not exist.

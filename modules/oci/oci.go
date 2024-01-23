@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"pkg.package-operator.run/cardboard/kubeutils"
-	"pkg.package-operator.run/cardboard/run"
 	"pkg.package-operator.run/cardboard/sh"
 )
 
@@ -82,8 +81,8 @@ func (oci *OCI) ID() string {
 }
 
 // Returns a Build dependency.
-func (oci *OCI) Run(_ context.Context) run.Dependency {
-	return run.Meth(oci, oci.Build)
+func (oci *OCI) Run(_ context.Context) error {
+	return oci.Build()
 }
 
 // Build the image.
