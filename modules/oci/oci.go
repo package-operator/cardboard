@@ -81,9 +81,9 @@ func (oci *OCI) ID() string {
 	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules/oci.OCI{name:%s}", oci.name)
 }
 
-// Returns a Push dependency.
+// Returns a Build dependency.
 func (oci *OCI) Run(_ context.Context) run.Dependency {
-	return run.Meth(oci, oci.Push)
+	return run.Meth(oci, oci.Build)
 }
 
 // Build the image.
