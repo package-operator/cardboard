@@ -21,6 +21,7 @@ import (
 
 const defaultCacheDirectory = ".cache"
 
+// Represents a KinD cluster.
 type Cluster struct {
 	name, workDir    string
 	kubeconfigPath   string
@@ -68,7 +69,7 @@ func (c *Cluster) KubeconfigPath() (string, error) {
 }
 
 func (c *Cluster) ID() string {
-	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules.Cluster{name:%s}", c.name)
+	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules/kind.Cluster{name:%s}", c.name)
 }
 
 func (c *Cluster) Name() string { return c.name }
@@ -112,14 +113,9 @@ func (c *Cluster) Clients() (*kubeclients.KubeClients, error) {
 	return c.clients, nil
 }
 
-// Returns a Create dependency for stetting up pre-requisites.
-func (c *Cluster) CreateDep() run.Dependency {
+// Returns a Create dependency to ensure the cluster is setup.
+func (c *Cluster) Run(_ context.Context) run.Dependency {
 	return run.Meth(c, c.Create)
-}
-
-// Returns a Destroy dependency for stetting up pre-requisites.
-func (c *Cluster) DestroyDep() run.Dependency {
-	return run.Meth(c, c.Destroy)
 }
 
 // Creates the KinD cluster if it does not exist.

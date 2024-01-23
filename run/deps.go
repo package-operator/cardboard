@@ -115,10 +115,6 @@ func (r *dependencyRun) childHasError(childs []string) bool {
 
 // Executes dependencies in parallel.
 func (r *dependencyRun) Parallel(ctx context.Context, parent DependencyIDer, deps ...Dependency) error {
-	if err := validateParentInCallStack(parent.ID()); err != nil {
-		panic(err)
-	}
-
 	var (
 		wg      sync.WaitGroup
 		errs    []error
@@ -147,10 +143,6 @@ func (r *dependencyRun) Parallel(ctx context.Context, parent DependencyIDer, dep
 
 // Executes dependencies one after the other.
 func (r *dependencyRun) Serial(ctx context.Context, parent DependencyIDer, deps ...Dependency) error {
-	if err := validateParentInCallStack(parent.ID()); err != nil {
-		panic(err)
-	}
-
 	localDeps := make([]Dependency, len(deps))
 	for i, dep := range deps {
 		localDeps[i] = r.get(dep, parent.ID())
@@ -177,37 +169,6 @@ func (r *dependencyRun) get(dep Dependency, parent string) Dependency {
 		r.ran[dep.ID()] = out
 	}
 	return out
-}
-
-func validateParentInCallStack(parent string) error {
-	if parent == "." || strings.HasPrefix(parent, "_") {
-		return nil
-	}
-
-	pcs := make([]uintptr, 4)
-	foundPCs := runtime.Callers(2, pcs)
-	var found bool
-	typeID := parent[0:strings.Index(parent, "{")]
-	paramStartIndex := strings.LastIndex(parent, "(")
-	var funcID string
-	if paramStartIndex != -1 {
-		funcID = parent[strings.LastIndex(parent, "."):paramStartIndex]
-	}
-	for i := 0; i < foundPCs; i++ {
-		pc := pcs[i]
-		funcR := runtime.FuncForPC(pc)
-
-		funcN := strings.ReplaceAll(funcR.Name(), "(*", "")
-		funcN = strings.ReplaceAll(funcN, ")", "")
-		found = funcN == typeID+funcID
-		if found {
-			break
-		}
-	}
-	if !found {
-		return fmt.Errorf("wrong parent for dependencies: %q not found in callstack", parent)
-	}
-	return nil
 }
 
 type dep struct {

@@ -200,6 +200,22 @@ func Test_newDependencyRun_Parallel(t *testing.T) {
 		)
 		require.NoError(t, err)
 	})
+
+	t.Run("context func", func(t *testing.T) {
+		t.Parallel()
+		dr := newDependencyRun()
+		ctx := context.Background()
+		err := dr.Parallel(ctx,
+			Fn1(test1, "a"),
+			Fn(myFuncCtx),
+			Fn2(test2, "a", "b"),
+			Fn3(test3, "a", 42, false),
+			Fn4(test4, "a", "b", "c", "d"),
+			Fn5(test5, "a", "b", "c", "d", "e"),
+			Fn6(test6, "a", "b", "c", "d", "e", "f"),
+		)
+		require.NoError(t, err)
+	})
 }
 
 func Test_funcID(t *testing.T) {
