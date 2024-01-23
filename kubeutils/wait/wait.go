@@ -3,6 +3,7 @@ package wait
 import (
 	"context"
 	"encoding/json"
+	goerrors "errors"
 	"fmt"
 	"time"
 
@@ -147,10 +148,11 @@ func (w *Waiter) WaitForObject(
 	}
 
 	key := client.ObjectKeyFromObject(object)
-	log.Info(fmt.Sprintf("waiting %s on %s %s %s...",
-		c.Timeout, gvk, key, waitReason))
+	text := fmt.Sprintf("waiting %s on %s %s %s",
+		c.Timeout, gvk, key, waitReason)
+	log.Info(text + "...")
 
-	return wait.PollUntilContextTimeout(ctx, c.Interval, c.Timeout, true,
+	err = wait.PollUntilContextTimeout(ctx, c.Interval, c.Timeout, true,
 		func(ctx context.Context) (done bool, err error) {
 			err = w.client.Get(ctx, client.ObjectKeyFromObject(object), object)
 			if err != nil {
@@ -161,6 +163,10 @@ func (w *Waiter) WaitForObject(
 			return checkFn(object)
 		},
 	)
+	if goerrors.Is(err, context.DeadlineExceeded) {
+		return fmt.Errorf("timeout " + text)
+	}
+	return err
 }
 
 // Wait for an object to not exist anymore.
@@ -182,10 +188,11 @@ func (w *Waiter) WaitToBeGone(
 	}
 
 	key := client.ObjectKeyFromObject(object)
-	log.Info(fmt.Sprintf("waiting %s for %s %s to be gone...",
-		c.Timeout, gvk, key))
+	text := fmt.Sprintf("waiting %s for %s %s to be gone",
+		c.Timeout, gvk, key)
+	log.Info(text + "...")
 
-	return wait.PollUntilContextTimeout(
+	err = wait.PollUntilContextTimeout(
 		ctx, c.Interval, c.Timeout, true,
 		func(ctx context.Context) (done bool, err error) {
 			err = w.client.Get(ctx, client.ObjectKeyFromObject(object), object)
@@ -200,6 +207,10 @@ func (w *Waiter) WaitToBeGone(
 			return checkFn(object)
 		},
 	)
+	if goerrors.Is(err, context.DeadlineExceeded) {
+		return fmt.Errorf("timeout " + text)
+	}
+	return err
 }
 
 // Check if a object condition is in a certain state.
