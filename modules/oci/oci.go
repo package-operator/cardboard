@@ -1,6 +1,7 @@
 package oci
 
 import (
+	"context"
 	"fmt"
 
 	"pkg.package-operator.run/cardboard/kubeutils"
@@ -77,16 +78,11 @@ func Load(path string) error {
 }
 
 func (oci *OCI) ID() string {
-	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules.OCI{name:%s}", oci.name)
-}
-
-// Returns a Build dependency.
-func (oci *OCI) BuildDep() run.Dependency {
-	return run.Meth(oci, oci.Build)
+	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules/oci.OCI{name:%s}", oci.name)
 }
 
 // Returns a Push dependency.
-func (oci *OCI) PushDep() run.Dependency {
+func (oci *OCI) Run(_ context.Context) run.Dependency {
 	return run.Meth(oci, oci.Push)
 }
 

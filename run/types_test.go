@@ -80,3 +80,27 @@ func myFuncCtx(_ context.Context) {}
 func myFuncCtxErr(_ context.Context) error {
 	return nil
 }
+
+func test1(_ context.Context, _ string) error {
+	return nil
+}
+
+func test2(_ context.Context, _, _ string) error {
+	return nil
+}
+
+func test3(_ context.Context, _ string, _ int, _ bool) error {
+	return nil
+}
+
+func test4(_ context.Context, _, _, _, _ string) error {
+	return nil
+}
+
+func test5(_ context.Context, _, _, _, _, _ string) error {
+	return nil
+}
+
+func test6(_ context.Context, _, _, _, _, _, _ string) error {
+	return nil
+}
