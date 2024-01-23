@@ -24,6 +24,7 @@ type OCI struct {
 	tags             []string
 	containerFile    string
 	workDir          string
+	cranePush        bool
 	containerRuntime kubeutils.ContainerRuntime
 	runner           shRunner
 }
@@ -48,6 +49,12 @@ type WithContainerFile string
 
 func (cf WithContainerFile) ApplyToOCI(oci *OCI) {
 	oci.containerFile = string(cf)
+}
+
+type WithCranePush struct{}
+
+func (cf WithCranePush) ApplyToOCI(oci *OCI) {
+	oci.cranePush = true
 }
 
 func NewOCI(name, workDir string, opts ...OCIOption) *OCI {
@@ -117,6 +124,24 @@ func (oci *OCI) Build() error {
 
 // Push the image.
 func (oci *OCI) Push() error {
+	if oci.cranePush {
+		return oci.pushWithCrane()
+	}
+	return oci.pushWithCR()
+}
+
+func (oci *OCI) pushWithCrane() error {
+	tags := registryNameTags(oci.name, oci.registries, oci.tags)
+	for _, t := range tags {
+		args := []string{"push", ociTarFilename, t}
+		if err := oci.runner.Run("crane", args...); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (oci *OCI) pushWithCR() error {
 	cr, err := oci.containerRuntime.Get()
 	if err != nil {
 		return err
@@ -129,7 +154,6 @@ func (oci *OCI) Push() error {
 			args = append(args, "--digestfile="+ociDigestFile)
 		}
 		args = append(args, t)
-
 		if err := oci.runner.Run(string(cr), args...); err != nil {
 			return err
 		}

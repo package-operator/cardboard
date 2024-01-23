@@ -149,19 +149,20 @@ func (c *Cluster) Create(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("checking cluster exists: %w", err)
 	}
-	if !clusterExists {
-		if err := provider.Create(c.name,
-			cluster.CreateWithKubeconfigPath(c.kubeconfigPath),
-			cluster.CreateWithConfigFile(kindconfigPath),
-			cluster.CreateWithDisplayUsage(true),
-			cluster.CreateWithDisplaySalutation(true),
-			cluster.CreateWithWaitForReady(5*time.Minute),
-			cluster.CreateWithRetain(false),
-		); err != nil {
-			return fmt.Errorf("failed to create the cluster: %w", err)
-		}
+	if clusterExists {
+		return nil
 	}
 
+	if err := provider.Create(c.name,
+		cluster.CreateWithKubeconfigPath(c.kubeconfigPath),
+		cluster.CreateWithConfigFile(kindconfigPath),
+		cluster.CreateWithDisplayUsage(true),
+		cluster.CreateWithDisplaySalutation(true),
+		cluster.CreateWithWaitForReady(5*time.Minute),
+		cluster.CreateWithRetain(false),
+	); err != nil {
+		return fmt.Errorf("failed to create the cluster: %w", err)
+	}
 	if _, err := c.Clients(); err != nil {
 		return err
 	}

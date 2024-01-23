@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"pkg.package-operator.run/cardboard/kubeutils"
+	"pkg.package-operator.run/cardboard/modules/kubeclients"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	kindv1alpha4 "sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 )
@@ -25,6 +26,12 @@ type WithClusterInitializers []ClusterInitializer
 
 func (opts WithClusterInitializers) ApplyToCluster(kc *Cluster) {
 	kc.initializers = []ClusterInitializer(opts)
+}
+
+type WithClientOptions []kubeclients.KubeClientsOption
+
+func (opts WithClientOptions) ApplyToCluster(kc *Cluster) {
+	kc.kubeClientsOptions = opts
 }
 
 type ClusterInitializer interface {
