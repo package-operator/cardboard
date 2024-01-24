@@ -28,7 +28,7 @@ func (opts WithClusterInitializers) ApplyToCluster(kc *Cluster) {
 	kc.initializers = []ClusterInitializer(opts)
 }
 
-type WithClientOptions []kubeclients.KubeClientsOption
+type WithClientOptions []kubeclients.Option
 
 func (opts WithClientOptions) ApplyToCluster(kc *Cluster) {
 	kc.kubeClientsOptions = opts
@@ -49,7 +49,8 @@ func (fn ClusterInitFn) Init(ctx context.Context, cl *Cluster) error {
 type ClusterLoadObjectsFromFolders []string
 
 func (l ClusterLoadObjectsFromFolders) Init(
-	ctx context.Context, cluster *Cluster) error {
+	ctx context.Context, cluster *Cluster,
+) error {
 	return cluster.clients.CreateAndWaitFromFolders(ctx, l)
 }
 
@@ -57,15 +58,17 @@ func (l ClusterLoadObjectsFromFolders) Init(
 type ClusterLoadObjectsFromFiles []string
 
 func (l ClusterLoadObjectsFromFiles) Init(
-	ctx context.Context, cluster *Cluster) error {
+	ctx context.Context, cluster *Cluster,
+) error {
 	return cluster.clients.CreateAndWaitFromFiles(ctx, l)
 }
 
 // Load objects from the given http urls and applies them into the cluster.
-type ClusterLoadObjectsFromHttp []string
+type ClusterLoadObjectsFromHTTP []string
 
-func (l ClusterLoadObjectsFromHttp) Init(
-	ctx context.Context, cluster *Cluster) error {
+func (l ClusterLoadObjectsFromHTTP) Init(
+	ctx context.Context, cluster *Cluster,
+) error {
 	return cluster.clients.CreateAndWaitFromHTTP(ctx, l)
 }
 
@@ -75,6 +78,7 @@ type ClusterLoadObjectFromClientObject struct {
 }
 
 func (l ClusterLoadObjectFromClientObject) Init(
-	ctx context.Context, cluster *Cluster) error {
+	ctx context.Context, cluster *Cluster,
+) error {
 	return cluster.clients.CreateAndWaitForReadiness(ctx, l.Object)
 }

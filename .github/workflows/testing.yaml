@@ -44,7 +44,7 @@ jobs:
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       with:
-        files: ./.cache/unit/cov.out,./.cache/integration/cov.out
+        files: ./cover.txt
         token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Archive cluster logs

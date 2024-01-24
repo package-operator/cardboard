@@ -28,7 +28,7 @@ type Cluster struct {
 	clusterConfig    *kindv1alpha4.Cluster
 
 	clients            *kubeclients.KubeClients
-	kubeClientsOptions []kubeclients.KubeClientsOption
+	kubeClientsOptions []kubeclients.Option
 	provider           *cluster.Provider
 	initializers       []ClusterInitializer
 }

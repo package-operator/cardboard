@@ -50,11 +50,11 @@ func (sb WithSchemeBuilder) ApplyToKubeClients(kc *KubeClients) {
 	kc.schemeBuilder = runtime.SchemeBuilder(sb)
 }
 
-type KubeClientsOption interface {
+type Option interface {
 	ApplyToKubeClients(kc *KubeClients)
 }
 
-func NewKubeClients(kubeconfigPath string, opts ...KubeClientsOption) *KubeClients {
+func NewKubeClients(kubeconfigPath string, opts ...Option) *KubeClients {
 	kc := &KubeClients{
 		Scheme:         runtime.NewScheme(),
 		kubeconfigPath: kubeconfigPath,

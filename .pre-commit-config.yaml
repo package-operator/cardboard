@@ -22,16 +22,11 @@ repos:
     - --autofix
   - id: trailing-whitespace
 
-- repo: https://github.com/dnephin/pre-commit-golang
-  rev: v0.3.5
-  hooks:
-  - id: go-fmt
-
 - repo: local
   hooks:
   - id: lint
     name: lint
-    entry: golangci-lint run ./... --deadline=15m
+    entry: ./do CI:PreCommit
     language: system
     exclude: ".*"
     always_run: true

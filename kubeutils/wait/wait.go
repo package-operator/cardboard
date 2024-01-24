@@ -3,12 +3,12 @@ package wait
 import (
 	"context"
 	"encoding/json"
-	goerrors "errors"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apimachineryerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -163,7 +163,7 @@ func (w *Waiter) WaitForObject(
 			return checkFn(object)
 		},
 	)
-	if goerrors.Is(err, context.DeadlineExceeded) {
+	if errors.Is(err, context.DeadlineExceeded) {
 		return fmt.Errorf("timeout " + text)
 	}
 	return err
@@ -196,7 +196,7 @@ func (w *Waiter) WaitToBeGone(
 		ctx, c.Interval, c.Timeout, true,
 		func(ctx context.Context) (done bool, err error) {
 			err = w.client.Get(ctx, client.ObjectKeyFromObject(object), object)
-			if errors.IsNotFound(err) {
+			if apimachineryerrors.IsNotFound(err) {
 				return true, nil
 			}
 			if err != nil {
@@ -207,7 +207,7 @@ func (w *Waiter) WaitToBeGone(
 			return checkFn(object)
 		},
 	)
-	if goerrors.Is(err, context.DeadlineExceeded) {
+	if errors.Is(err, context.DeadlineExceeded) {
 		return fmt.Errorf("timeout " + text)
 	}
 	return err

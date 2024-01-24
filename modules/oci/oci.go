@@ -29,7 +29,7 @@ type OCI struct {
 	runner           shRunner
 }
 
-type OCIOption interface {
+type Option interface {
 	ApplyToOCI(oci *OCI)
 }
 
@@ -57,7 +57,7 @@ func (cf WithCranePush) ApplyToOCI(oci *OCI) {
 	oci.cranePush = true
 }
 
-func NewOCI(name, workDir string, opts ...OCIOption) *OCI {
+func NewOCI(name, workDir string, opts ...Option) *OCI {
 	oci := &OCI{
 		name:    name,
 		workDir: workDir,
@@ -77,9 +77,6 @@ func Load(path string) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(path)
-
 	return sh.New().Run(string(cr), "load", "-i", path)
 }
 
