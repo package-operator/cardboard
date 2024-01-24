@@ -1,4 +1,2 @@
 .cache
-cover.txt
-gotest.log
 go.work.sum
