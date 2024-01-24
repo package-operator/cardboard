@@ -3,6 +3,7 @@ package kubeutils
 import (
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 )
 
@@ -24,6 +25,13 @@ func (cr ContainerRuntime) Get() (ContainerRuntime, error) {
 
 // Detects the available container runtime, priotizes podman before docker.
 func DetectContainerRuntime() (ContainerRuntime, error) {
+	switch os.Getenv("CARDBOARD_CONTAINER_RUNTIME") {
+	case "podman":
+		return ContainerRuntimePodman, nil
+	case "docker":
+		return ContainerRuntimeDocker, nil
+	}
+
 	if _, err := exec.LookPath("podman"); err == nil {
 		return ContainerRuntimePodman, nil
 	} else if !errors.Is(err, exec.ErrNotFound) {
