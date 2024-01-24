@@ -1,0 +1,32 @@
+exclude: |
+  (?x)(
+    (^vendor/)|
+    (^.vscode/)|
+    (mage_output_file.go)|
+    (.deepcopy.go$)
+  )
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.4.0
+  hooks:
+  - id: check-added-large-files
+  - id: check-case-conflict
+  - id: check-json
+  - id: check-merge-conflict
+  - id: check-symlinks
+  - id: detect-private-key
+  - id: end-of-file-fixer
+    exclude: ".test-fixtures\/.*"
+  - id: pretty-format-json
+    args:
+    - --autofix
+  - id: trailing-whitespace
+
+- repo: local
+  hooks:
+  - id: lint
+    name: lint
+    entry: ./do CI:PreCommit
+    language: system
+    exclude: ".*"
+    always_run: true

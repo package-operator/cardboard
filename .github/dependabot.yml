@@ -1,0 +1,53 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: /
+  schedule:
+    interval: daily
+  allow:
+  - dependency-type: all
+    dependency-name: "*"
+  assignees: [ eqrx ]
+  open-pull-requests-limit: 100
+- package-ecosystem: gomod
+  directory: /kubeutils
+  schedule:
+    interval: daily
+  allow:
+  - dependency-type: all
+    dependency-name: "*"
+  assignees: [ eqrx ]
+  open-pull-requests-limit: 100
+- package-ecosystem: gomod
+  directory: /modules/kind
+  schedule:
+    interval: daily
+  allow:
+  - dependency-type: all
+    dependency-name: "*"
+  assignees: [ eqrx ]
+  open-pull-requests-limit: 100
+- package-ecosystem: gomod
+  directory: /modules/kubeclients
+  schedule:
+    interval: daily
+  allow:
+  - dependency-type: all
+    dependency-name: "*"
+  assignees: [ eqrx ]
+  open-pull-requests-limit: 100
+- package-ecosystem: gomod
+  directory: /modules/oci
+  schedule:
+    interval: daily
+  allow:
+  - dependency-type: all
+    dependency-name: "*"
+  assignees: [ eqrx ]
+  open-pull-requests-limit: 100
+- package-ecosystem: github-actions
+  directory: /
+  schedule:
+    interval: daily
+  assignees: [ eqrx ]
+  open-pull-requests-limit: 100
