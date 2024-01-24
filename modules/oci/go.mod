@@ -11,9 +11,3 @@ replace (
 	pkg.package-operator.run/cardboard => ../../
 	pkg.package-operator.run/cardboard/kubeutils => ../../kubeutils
 )
-
-require (
-	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/xlab/treeprint v1.2.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
-)

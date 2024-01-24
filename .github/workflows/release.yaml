@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Create git tag for submodules
+      run: |
+        git config user.email "$(git show --format=%ae -s $GITHUB_REF_NAME | tail -1)"
+        git config user.name "$(git show --format=%an -s $GITHUB_REF_NAME | tail -1)"
+        git tag -f -a kubeutils/$GITHUB_REF_NAME -m kubeutils/$GITHUB_REF_NAME ${GITHUB_REF_NAME}^{}
+        git push -f origin kubeutils/$GITHUB_REF_NAME
+        git tag -f -a modules/kind/$GITHUB_REF_NAME -m modules/kind/$GITHUB_REF_NAME ${GITHUB_REF_NAME}^{}
+        git push -f origin modules/kind/$GITHUB_REF_NAME
+        git tag -f -a modules/kubeclients/$GITHUB_REF_NAME -m modules/kubeclients/$GITHUB_REF_NAME ${GITHUB_REF_NAME}^{}
+        git push -f origin modules/kubeclients/$GITHUB_REF_NAME
+        git tag -f -a modules/oci/$GITHUB_REF_NAME -m modules/oci/$GITHUB_REF_NAME ${GITHUB_REF_NAME}^{}
+        git push -f origin modules/oci/$GITHUB_REF_NAME
