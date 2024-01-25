@@ -164,7 +164,7 @@ func (w *Waiter) WaitForObject(
 		},
 	)
 	if errors.Is(err, context.DeadlineExceeded) {
-		return fmt.Errorf("timeout " + text)
+		return fmt.Errorf("timeout %s: %w ", text, err)
 	}
 	return err
 }
@@ -208,7 +208,7 @@ func (w *Waiter) WaitToBeGone(
 		},
 	)
 	if errors.Is(err, context.DeadlineExceeded) {
-		return fmt.Errorf("timeout " + text)
+		return fmt.Errorf("timeout %s: %w", text, err)
 	}
 	return err
 }
