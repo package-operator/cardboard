@@ -429,7 +429,19 @@ type selfIdentifier interface {
 func methID(thing, fn any, args ...any) string {
 	sid := structID(thing)
 	fid := funcID(fn, args...)
-	fid = fid[strings.LastIndex(fid, ").")+2:]
+	idx := strings.LastIndex(fid, ").")
+	if idx >= 0 {
+		// if the function receiver is a pointer, fid will look like "main.(*CI).PreCommit([]string{})"
+		// we want to remove the "main.(*CI)" part to replace it with sid
+		fid = fid[idx+2:]
+	} else {
+		idx = strings.LastIndex(fid, sid[:(len(sid)-2)])
+		if idx >= 0 {
+			// if the function receiver is not a pointer, fid will look like "main.Lint.glciFix()"
+			// we want to remove the "main.Lint" part to replace it with sid
+			fid = fid[(idx + len(sid) - 1):]
+		}
+	}
 	return fmt.Sprintf("%s.%s", sid, fid)
 }
 
