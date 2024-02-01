@@ -70,6 +70,9 @@ func (m *MyThing) privateMustPanic(_ string) {
 	Must(fmt.Errorf("explosion"))
 }
 
+func (m MyThing) privateReceiverNotPointer(_ string) {
+}
+
 func TestManager_Call_unknownTarget(t *testing.T) {
 	log := slogt.New(t)
 	mgr := New(WithLogger{log})

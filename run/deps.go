@@ -435,11 +435,16 @@ func methID(thing, fn any, args ...any) string {
 		// we want to remove the "main.(*CI)" part to replace it with sid
 		fid = fid[idx+2:]
 	} else {
-		idx = strings.LastIndex(fid, sid[:(len(sid)-2)])
+		sidSlice := sid
+		sIdx := strings.Index(sid, "{")
+		if sIdx >= 0 {
+			sidSlice = sid[:sIdx]
+		}
+		idx = strings.LastIndex(fid, sidSlice)
 		if idx >= 0 {
 			// if the function receiver is not a pointer, fid will look like "main.Lint.glciFix()"
 			// we want to remove the "main.Lint" part to replace it with sid
-			fid = fid[(idx + len(sid) - 1):]
+			fid = fid[(idx + len(sidSlice) + 1):]
 		}
 	}
 	return fmt.Sprintf("%s.%s", sid, fid)
