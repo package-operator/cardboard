@@ -272,4 +272,6 @@ func Test_methID(t *testing.T) {
 	test := &MyThing{field: "xxx"}
 	s := methID(test, test.private)
 	assert.Equal(t, "pkg.package-operator.run/cardboard/run.MyThing{field:xxx}.private()", s)
+	s = methID(test, test.privateReceiverNotPointer)
+	assert.Equal(t, "pkg.package-operator.run/cardboard/run.MyThing{field:xxx}.privateReceiverNotPointer()", s)
 }
