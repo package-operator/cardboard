@@ -3,13 +3,13 @@ package run
 import "fmt"
 
 // used to wrap unexpected panics.
-type internalPanicedError struct {
+type internalPanickedError struct {
 	ID    string // (optional) call id, e.g. object:func
 	Obj   any    // object thrown by panic
 	Stack string
 }
 
-func (p *internalPanicedError) Error() string {
+func (p *internalPanickedError) Error() string {
 	if len(p.ID) > 0 {
 		return fmt.Sprintf("Panic in call %q: %v\n%v", p.ID, p.Obj, p.Stack)
 	}

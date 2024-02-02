@@ -332,7 +332,7 @@ func (m *Manager) registerMeth(
 				return
 			}
 
-			err = &internalPanicedError{
+			err = &internalPanickedError{
 				ID:    typeID + ":" + methodID,
 				Obj:   a,
 				Stack: string(debug.Stack()),
