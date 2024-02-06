@@ -55,7 +55,7 @@ func NewCluster(name string, opts ...ClusterOption) *Cluster {
 }
 
 func (c *Cluster) Kubeconfig(internal bool) (string, error) {
-	provider, err := c.getKindProvider()
+	provider, err := providerOrFromCR(c.provider, c.containerRuntime)
 	if err != nil {
 		return "", err
 	}
@@ -74,17 +74,16 @@ func (c *Cluster) ID() string {
 func (c *Cluster) Name() string { return c.name }
 
 func (c *Cluster) ExportLogs(path string) error {
-	provider, err := c.getKindProvider()
+	provider, err := providerOrFromCR(c.provider, c.containerRuntime)
 	if err != nil {
 		return err
 	}
-
 	return provider.CollectLogs(c.name, path)
 }
 
 // Check if the cluster already exists.
 func (c *Cluster) Exists() (bool, error) {
-	provider, err := c.getKindProvider()
+	provider, err := providerOrFromCR(c.provider, c.containerRuntime)
 	if err != nil {
 		return false, err
 	}
@@ -119,12 +118,6 @@ func (c *Cluster) Run(ctx context.Context) error {
 
 // Creates the KinD cluster if it does not exist.
 func (c *Cluster) Create(ctx context.Context) error {
-	var err error
-	c.containerRuntime, err = c.containerRuntime.Get()
-	if err != nil {
-		return fmt.Errorf("get container runtime: %w", err)
-	}
-
 	if err := os.MkdirAll(c.workDir, os.ModePerm); err != nil {
 		return fmt.Errorf("creating workdir: %w", err)
 	}
@@ -139,7 +132,7 @@ func (c *Cluster) Create(ctx context.Context) error {
 		return fmt.Errorf("creating kind cluster config: %w", err)
 	}
 
-	provider, err := c.getKindProvider()
+	provider, err := providerOrFromCR(c.provider, c.containerRuntime)
 	if err != nil {
 		return err
 	}
@@ -176,7 +169,7 @@ func (c *Cluster) Create(ctx context.Context) error {
 
 // Destroys the KinD cluster if it exists.
 func (c *Cluster) Destroy(_ context.Context) error {
-	provider, err := c.getKindProvider()
+	provider, err := providerOrFromCR(c.provider, c.containerRuntime)
 	if err != nil {
 		return err
 	}
@@ -185,7 +178,7 @@ func (c *Cluster) Destroy(_ context.Context) error {
 
 // Load an image from a tar archive into the environment.
 func (c *Cluster) LoadImageFromTar(filePath string) error {
-	provider, err := c.getKindProvider()
+	provider, err := providerOrFromCR(c.provider, c.containerRuntime)
 	if err != nil {
 		return err
 	}
@@ -207,23 +200,26 @@ func (c *Cluster) LoadImageFromTar(filePath string) error {
 	return nil
 }
 
-func (c *Cluster) getKindProvider() (cluster.Provider, error) {
-	if c.provider != nil {
-		return *c.provider, nil
+func providerOrFromCR(p *cluster.Provider, cr kubeutils.ContainerRuntime) (*cluster.Provider, error) {
+	if p != nil {
+		return p, nil
+	}
+
+	cr, err := kubeutils.ContainerRuntimeOrDetect(cr)
+	if err != nil {
+		return nil, err
 	}
 
 	var providerOpt cluster.ProviderOption
-	switch c.containerRuntime {
+	switch cr {
 	case kubeutils.ContainerRuntimeDocker:
 		providerOpt = cluster.ProviderWithDocker()
 	case kubeutils.ContainerRuntimePodman:
 		providerOpt = cluster.ProviderWithPodman()
+	default:
+		panic("unknown cr")
 	}
-	logger := kindcmd.NewLogger()
-	return *cluster.NewProvider(
-		cluster.ProviderWithLogger(logger),
-		providerOpt,
-	), nil
+	return cluster.NewProvider(cluster.ProviderWithLogger(kindcmd.NewLogger()), providerOpt), nil
 }
 
 func loadImageTarIntoNode(imageTarPath string, node nodes.Node) error {
