@@ -126,9 +126,9 @@ func (m *Manager) ParallelDeps(ctx context.Context, parent DependencyIDer, deps 
 	return m.dr.Parallel(ctx, parent, deps...)
 }
 
-func (m *Manager) Register(things ...any) error {
+func (m *Manager) Register(targetGroup ...any) error {
 	return decorateWithCallingSourceLine(
-		m.registerAll(things...),
+		m.registerAll(targetGroup...),
 	)
 }
 
@@ -159,8 +159,8 @@ func (m *Manager) RegisterGoTool(tool, packageURL, version string) error {
 	return m.dm.Register(tool, packageURL, version)
 }
 
-func (m *Manager) RegisterAndRun(ctx context.Context, things ...any) error {
-	if err := m.registerAll(things...); err != nil {
+func (m *Manager) RegisterAndRun(ctx context.Context, targetGroups ...any) error {
+	if err := m.registerAll(targetGroups...); err != nil {
 		return decorateWithCallingSourceLine(err)
 	}
 	if err := m.Run(ctx); err != nil {
@@ -170,8 +170,8 @@ func (m *Manager) RegisterAndRun(ctx context.Context, things ...any) error {
 	return nil
 }
 
-func (m *Manager) MustRegisterAndRun(ctx context.Context, things ...any) {
-	if err := m.registerAll(things...); err != nil {
+func (m *Manager) MustRegisterAndRun(ctx context.Context, targetGroups ...any) {
+	if err := m.registerAll(targetGroups...); err != nil {
 		m.logger.Error((decorateWithCallingSourceLine(err)).Error())
 		os.Exit(1)
 	}
@@ -262,32 +262,32 @@ func (m *Manager) run(ctx context.Context) error {
 	return err
 }
 
-func (m *Manager) registerAll(things ...any) error {
-	for _, thing := range things {
-		if err := m.register(thing); err != nil {
+func (m *Manager) registerAll(targetGroups ...any) error {
+	for _, targetGroup := range targetGroups {
+		if err := m.register(targetGroup); err != nil {
 			return fmt.Errorf("registration failed: %w", err)
 		}
 	}
 	return nil
 }
 
-func (m *Manager) register(thing any) error {
-	if thing == nil {
-		return fmt.Errorf("thing must not be nil")
+func (m *Manager) register(targetGroup any) error {
+	if targetGroup == nil {
+		return fmt.Errorf("targetGroup must not be nil")
 	}
 
-	thingType := reflect.TypeOf(thing)
-	if thingType.Kind() != reflect.Pointer ||
-		thingType.Elem().Kind() != reflect.Struct {
-		return fmt.Errorf("thing must be pointer to struct")
+	targetGroupType := reflect.TypeOf(targetGroup)
+	if targetGroupType.Kind() != reflect.Pointer ||
+		targetGroupType.Elem().Kind() != reflect.Struct {
+		return fmt.Errorf("targetGroup must be pointer to struct")
 	}
 
-	thingValue := reflect.ValueOf(thing)
-	typeID := thingType.Elem().Name()
-	for i := 0; i < thingType.NumMethod(); i++ {
-		method := thingType.Method(i)
-		methodValue := thingValue.MethodByName(method.Name)
-		if err := m.registerMeth(typeID, thing, method, methodValue); err != nil {
+	targetGroupValue := reflect.ValueOf(targetGroup)
+	typeID := targetGroupType.Elem().Name()
+	for i := 0; i < targetGroupType.NumMethod(); i++ {
+		method := targetGroupType.Method(i)
+		methodValue := targetGroupValue.MethodByName(method.Name)
+		if err := m.registerMeth(typeID, targetGroup, method, methodValue); err != nil {
 			return err
 		}
 	}
@@ -295,7 +295,7 @@ func (m *Manager) register(thing any) error {
 }
 
 func (m *Manager) registerMeth(
-	typeID string, thing any,
+	typeID string, targetGroup any,
 	method reflect.Method,
 	methodValue reflect.Value,
 ) error {
@@ -357,7 +357,7 @@ func (m *Manager) registerMeth(
 	}
 	t := target{
 		idWithArgs: func(args ...any) string {
-			return methIDLit(thing, methodID, args...)
+			return methIDLit(targetGroup, methodID, args...)
 		},
 		run: fn,
 	}
