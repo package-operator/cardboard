@@ -127,7 +127,9 @@ func (m *Manager) ParallelDeps(ctx context.Context, parent DependencyIDer, deps 
 }
 
 func (m *Manager) Register(things ...any) error {
-	return m.registerAll(things...)
+	return decorateWithCallingSourceLine(
+		m.registerAll(things...),
+	)
 }
 
 func (m *Manager) Call(ctx context.Context, id string, args []string) (err error) {
@@ -159,7 +161,7 @@ func (m *Manager) RegisterGoTool(tool, packageURL, version string) error {
 
 func (m *Manager) RegisterAndRun(ctx context.Context, things ...any) error {
 	if err := m.registerAll(things...); err != nil {
-		return err
+		return decorateWithCallingSourceLine(err)
 	}
 	if err := m.Run(ctx); err != nil {
 		return err
@@ -170,7 +172,7 @@ func (m *Manager) RegisterAndRun(ctx context.Context, things ...any) error {
 
 func (m *Manager) MustRegisterAndRun(ctx context.Context, things ...any) {
 	if err := m.registerAll(things...); err != nil {
-		m.logger.Error(err.Error())
+		m.logger.Error((decorateWithCallingSourceLine(err)).Error())
 		os.Exit(1)
 	}
 	if err := m.Run(ctx); err != nil {
