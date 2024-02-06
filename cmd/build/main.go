@@ -66,13 +66,17 @@ func (ci *CI) Lint(_ context.Context, _ []string) error {
 	return lint.Check()
 }
 
-// Runs linters and code-gens for pre-commit.
-func (ci *CI) PreCommit(ctx context.Context, args []string) error {
-	self := run.Meth1(ci, ci.PreCommit, args)
-	return mgr.ParallelDeps(ctx, self,
+func (ci *CI) PostPush(ctx context.Context, args []string) error {
+	self := run.Meth1(ci, ci.PostPush, args)
+	err := mgr.ParallelDeps(ctx, self,
 		run.Meth(lint, lint.glciFix),
 		run.Meth(lint, lint.goModTidyAll),
 	)
+	if err != nil {
+		return err
+	}
+
+	return shr.Run("git", "diff", "--quiet", "--exit-code")
 }
 
 // Development focused commands using local development environment.
@@ -86,6 +90,15 @@ func (d *Dev) Unit(ctx context.Context, args []string) error {
 // Runs local linters to check the codebase.
 func (d *Dev) Lint(_ context.Context, _ []string) error {
 	return lint.Check()
+}
+
+// Runs linters and code-gens for pre-commit.
+func (d *Dev) PreCommit(ctx context.Context, args []string) error {
+	self := run.Meth1(d, d.PreCommit, args)
+	return mgr.ParallelDeps(ctx, self,
+		run.Meth(lint, lint.glciFix),
+		run.Meth(lint, lint.goModTidyAll),
+	)
 }
 
 // Tries to fix linter issues.
