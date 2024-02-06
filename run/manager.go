@@ -263,17 +263,21 @@ func (m *Manager) run(ctx context.Context) error {
 func (m *Manager) registerAll(things ...any) error {
 	for _, thing := range things {
 		if err := m.register(thing); err != nil {
-			return err
+			return fmt.Errorf("registration failed: %w", err)
 		}
 	}
 	return nil
 }
 
 func (m *Manager) register(thing any) error {
+	if thing == nil {
+		return fmt.Errorf("thing must not be nil")
+	}
+
 	thingType := reflect.TypeOf(thing)
 	if thingType.Kind() != reflect.Pointer ||
 		thingType.Elem().Kind() != reflect.Struct {
-		return fmt.Errorf("must be pointer to struct")
+		return fmt.Errorf("thing must be pointer to struct")
 	}
 
 	thingValue := reflect.ValueOf(thing)
