@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 )
 
 type ContainerRuntime string
@@ -12,24 +13,25 @@ type ContainerRuntime string
 const (
 	ContainerRuntimePodman ContainerRuntime = "podman"
 	ContainerRuntimeDocker ContainerRuntime = "docker"
-	ContainerRuntimeAuto   ContainerRuntime = "auto" // auto detect
 )
 
-func (cr ContainerRuntime) Get() (ContainerRuntime, error) {
-	switch cr {
-	case ContainerRuntimePodman, ContainerRuntimeDocker:
-		return cr, nil
-	}
-	return DetectContainerRuntime()
+func isValidCR(cr ContainerRuntime) bool {
+	return slices.Contains([]ContainerRuntime{ContainerRuntimePodman, ContainerRuntimeDocker}, cr)
 }
 
-// Detects the available container runtime, priotizes podman before docker.
-func DetectContainerRuntime() (ContainerRuntime, error) {
-	switch os.Getenv("CARDBOARD_CONTAINER_RUNTIME") {
-	case "podman":
-		return ContainerRuntimePodman, nil
-	case "docker":
-		return ContainerRuntimeDocker, nil
+func ContainerRuntimeOrDetect(cr ContainerRuntime) (ContainerRuntime, error) {
+	if isValidCR(cr) {
+		return cr, nil
+	}
+
+	crStr, crStrOK := os.LookupEnv("CARDBOARD_CONTAINER_RUNTIME")
+	if crStrOK {
+		cr = ContainerRuntime(crStr)
+		if !isValidCR(cr) {
+			return cr, fmt.Errorf("invalid value for CARDBOARD_CONTAINER_RUNTIME")
+		}
+
+		return cr, nil
 	}
 
 	if _, err := exec.LookPath("podman"); err == nil {

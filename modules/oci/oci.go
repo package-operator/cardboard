@@ -72,8 +72,8 @@ func NewOCI(name, workDir string, opts ...Option) *OCI {
 	return oci
 }
 
-func Load(path string) error {
-	cr, err := kubeutils.DetectContainerRuntime()
+func (oci *OCI) Load(path string) error {
+	cr, err := kubeutils.ContainerRuntimeOrDetect(oci.containerRuntime)
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (oci *OCI) Run(_ context.Context) error {
 
 // Build the image.
 func (oci *OCI) Build() error {
-	cr, err := oci.containerRuntime.Get()
+	cr, err := kubeutils.ContainerRuntimeOrDetect(oci.containerRuntime)
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func (oci *OCI) pushWithCrane() error {
 }
 
 func (oci *OCI) pushWithCR() error {
-	cr, err := oci.containerRuntime.Get()
+	cr, err := kubeutils.ContainerRuntimeOrDetect(oci.containerRuntime)
 	if err != nil {
 		return err
 	}
