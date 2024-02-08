@@ -3,8 +3,8 @@ module pkg.package-operator.run/cardboard/modules/kind
 go 1.21
 
 require (
-	pkg.package-operator.run/cardboard/kubeutils v0.0.0-20240207155344-4e27bb34423a
-	pkg.package-operator.run/cardboard/modules/kubeclients v0.0.0-20240207155344-4e27bb34423a
+	pkg.package-operator.run/cardboard/kubeutils v0.0.0-20240208102837-3d27746a51bc
+	pkg.package-operator.run/cardboard/modules/kubeclients v0.0.0-20240208102837-3d27746a51bc
 	sigs.k8s.io/controller-runtime v0.17.0
 	sigs.k8s.io/kind v0.21.0
 	sigs.k8s.io/yaml v1.4.0
