@@ -3,8 +3,8 @@ module pkg.package-operator.run/cardboard/modules/kind
 go 1.21
 
 require (
-	pkg.package-operator.run/cardboard/kubeutils v0.0.0-20240208102837-3d27746a51bc
-	pkg.package-operator.run/cardboard/modules/kubeclients v0.0.0-20240208102837-3d27746a51bc
+	pkg.package-operator.run/cardboard/kubeutils v0.0.0-20240208111929-988eb7cdee8a
+	pkg.package-operator.run/cardboard/modules/kubeclients v0.0.0-20240212122553-bd3a19077f91
 	sigs.k8s.io/controller-runtime v0.17.1
 	sigs.k8s.io/kind v0.21.0
 	sigs.k8s.io/yaml v1.4.0
@@ -78,7 +78,7 @@ require (
 	k8s.io/client-go v0.29.1 // indirect
 	k8s.io/component-base v0.29.1 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20240126223410-2919ad4fcfec // indirect
+	k8s.io/kube-openapi v0.0.0-20240209001042-7a0d5b415232 // indirect
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
