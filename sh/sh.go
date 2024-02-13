@@ -49,7 +49,15 @@ func (r *Runner) Run(cmd string, args ...string) error {
 
 func (r *Runner) Bash(script ...string) error {
 	scriptBuf := bytes.NewBufferString(strings.Join(script, "\n"))
-	return r.run(outOrStdoutIfNil(r.stdout), outOrStderrIfNil(r.stderr), scriptBuf, "bash")
+	if err := r.run(
+		outOrStdoutIfNil(r.stdout),
+		outOrStderrIfNil(r.stderr),
+		scriptBuf,
+		"bash",
+	); err != nil {
+		return fmt.Errorf("failed to run bash script: %w\nscript: %s", err, strings.Join(script, "\n"))
+	}
+	return nil
 }
 
 func (r *Runner) Output(cmd string, args ...string) (string, error) {
