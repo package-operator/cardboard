@@ -6,7 +6,7 @@ require (
 	pkg.package-operator.run/cardboard/kubeutils v0.0.0-20240208111929-988eb7cdee8a
 	pkg.package-operator.run/cardboard/modules/kubeclients v0.0.0-20240212122553-bd3a19077f91
 	sigs.k8s.io/controller-runtime v0.17.1
-	sigs.k8s.io/kind v0.21.0
+	sigs.k8s.io/kind v0.22.0
 	sigs.k8s.io/yaml v1.4.0
 )
 
