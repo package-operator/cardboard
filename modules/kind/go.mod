@@ -5,7 +5,7 @@ go 1.21
 require (
 	pkg.package-operator.run/cardboard/kubeutils v0.0.0-20240215101355-db99fcc2d2ce
 	pkg.package-operator.run/cardboard/modules/kubeclients v0.0.0-20240215101355-db99fcc2d2ce
-	sigs.k8s.io/controller-runtime v0.17.1
+	sigs.k8s.io/controller-runtime v0.17.2
 	sigs.k8s.io/kind v0.22.0
 	sigs.k8s.io/yaml v1.4.0
 )
