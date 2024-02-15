@@ -71,7 +71,42 @@ func (c *Cluster) ID() string {
 	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules/kind.Cluster{name:%s}", c.name)
 }
 
+func (c *Cluster) IPv4() (string, error) {
+	clusterNodes, err := c.Nodes(false)
+	if err != nil {
+		// TODO: augment error
+		return "", err
+	}
+	for _, node := range clusterNodes {
+		role, err := node.Role()
+		if err != nil {
+			// TODO: augment error
+			return "", err
+		}
+		if role == "control-plane" {
+			ipv4, _, err := node.IP()
+			if err != nil {
+				// TODO: augment error
+				return "", err
+			}
+			return ipv4, nil
+		}
+	}
+	return "", fmt.Errorf("can't find control plane node for cluster %s", c.Name())
+}
+
 func (c *Cluster) Name() string { return c.name }
+
+func (c *Cluster) Nodes(internal bool) ([]nodes.Node, error) {
+	provider, err := providerOrFromCR(c.provider, c.containerRuntime)
+	if err != nil {
+		return []nodes.Node{}, err
+	}
+	if internal {
+		return provider.ListInternalNodes(c.name)
+	}
+	return provider.ListNodes(c.name)
+}
 
 func (c *Cluster) ExportLogs(path string) error {
 	provider, err := providerOrFromCR(c.provider, c.containerRuntime)
