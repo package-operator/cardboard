@@ -355,7 +355,8 @@ func Fn4WithName[T fn4[A, B, C, D], A, B, C, D any](name string, fn T, a1 A, a2 
 }
 
 type fn5[A, B, C, D, E any] interface {
-	func(A, B, C, D, E) | func(A, B, C, D, E) error | func(context.Context, A, B, C, D, E) | func(context.Context, A, B, C, D, E) error
+	func(A, B, C, D, E) | func(A, B, C, D, E) error |
+		func(context.Context, A, B, C, D, E) | func(context.Context, A, B, C, D, E) error
 }
 
 // Wraps a struct method with five parameters for the dependency handler.
@@ -389,7 +390,8 @@ func Fn5WithName[T fn5[A, B, C, D, E], A, B, C, D, E any](name string, fn T, a1 
 }
 
 type fn6[A, B, C, D, E, F any] interface {
-	func(A, B, C, D, E, F) | func(A, B, C, D, E, F) error | func(context.Context, A, B, C, D, E, F) | func(context.Context, A, B, C, D, E, F) error
+	func(A, B, C, D, E, F) | func(A, B, C, D, E, F) error |
+		func(context.Context, A, B, C, D, E, F) | func(context.Context, A, B, C, D, E, F) error
 }
 
 // Wraps a struct method with six parameters for the dependency handler.
@@ -403,7 +405,9 @@ func Fn6[T fn6[A, B, C, D, E, F], A, B, C, D, E, F any](fn T, a1 A, a2 B, a3 C, 
 }
 
 // Wraps a function with six parameters and a specific name for the dependency handler.
-func Fn6WithName[T fn6[A, B, C, D, E, F], A, B, C, D, E, F any](name string, fn T, a1 A, a2 B, a3 C, a4 D, a5 E, a6 F) Dependency {
+func Fn6WithName[T fn6[A, B, C, D, E, F], A, B, C, D, E, F any](
+	name string, fn T, a1 A, a2 B, a3 C, a4 D, a5 E, a6 F,
+) Dependency {
 	return &dep{
 		id: name,
 		run: func(ctx context.Context) error {

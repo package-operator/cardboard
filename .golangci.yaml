@@ -23,7 +23,6 @@ linters:
   #- inamedparam      # Not that useful.
   #- interfacebloat   # WE do bloaty interfaces.
   #- ireturn          # Not that useful/false positives.
-  #- lll              # Could be nice in the future.
   #- nakedret         # Naked return good return.
   #- nlreturn         # Could be nice in the future.
   #- nonamedreturns   # Named return good return.
@@ -62,12 +61,14 @@ linters:
   - goimports
   - gomodguard
   - goprintffuncname
+  - gosec
   - gosimple
   - gosmopolitan
   - govet
   - grouper
   - importas
   - ineffassign
+  - lll
   - loggercheck
   - maintidx
   - makezero
@@ -89,6 +90,7 @@ linters:
   - revive
   - rowserrcheck
   - sloglint
+  - spancheck
   - staticcheck
   - stylecheck
   - sqlclosecheck
