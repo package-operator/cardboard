@@ -70,7 +70,7 @@ func (d *dependencyManager) Register(tool, packageURL, version string) error {
 	}
 
 	d.deps[tool] = newURL
-	d.depFns = append(d.depFns, FnWithName(fmt.Sprintf("go install %s", tool), installFn))
+	d.depFns = append(d.depFns, FnWithName("go install "+tool, installFn))
 	return nil
 }
 

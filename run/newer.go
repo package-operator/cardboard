@@ -10,13 +10,13 @@ import (
 
 // errNewer is an ugly sentinel error to cause filepath.Walk to abort
 // as soon as a newer file is encountered.
-var errNewer = fmt.Errorf("newer item encountered")
+var errNewer = errors.New("newer item encountered")
 
 // DirNewer reports whether any item in sources is newer than the target time.
 // Sources are searched recursively and searching stops as soon as any entry
 // is newer than the target.
 func DirNewer(target time.Time, sources ...string) (bool, error) {
-	walkFn := func(path string, info os.FileInfo, err error) error {
+	walkFn := func(_ string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

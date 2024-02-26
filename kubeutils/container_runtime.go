@@ -28,7 +28,7 @@ func ContainerRuntimeOrDetect(cr ContainerRuntime) (ContainerRuntime, error) {
 	if crStrOK {
 		cr = ContainerRuntime(crStr)
 		if !isValidCR(cr) {
-			return cr, fmt.Errorf("invalid value for CARDBOARD_CONTAINER_RUNTIME")
+			return cr, errors.New("invalid value for CARDBOARD_CONTAINER_RUNTIME")
 		}
 
 		return cr, nil
@@ -45,5 +45,5 @@ func ContainerRuntimeOrDetect(cr ContainerRuntime) (ContainerRuntime, error) {
 	} else if !errors.Is(err, exec.ErrNotFound) {
 		return "", fmt.Errorf("looking up docker executable: %w", err)
 	}
-	return "", fmt.Errorf("could not detect container runtime")
+	return "", errors.New("could not detect container runtime")
 }

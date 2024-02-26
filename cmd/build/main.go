@@ -35,7 +35,7 @@ func main() {
 
 	err := errors.Join(
 		mgr.RegisterGoTool("gotestfmt", "github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt", "2.5.0"),
-		mgr.RegisterGoTool("golangci-lint", "github.com/golangci/golangci-lint/cmd/golangci-lint", "1.55.0"),
+		mgr.RegisterGoTool("golangci-lint", "github.com/golangci/golangci-lint/cmd/golangci-lint", "1.56.2"),
 		mgr.Register(&Dev{}, &CI{}),
 	)
 	if err != nil {
@@ -115,7 +115,7 @@ func commonUnit(ctx context.Context, args []string) error {
 	case 1:
 		filter = args[0]
 	default:
-		return fmt.Errorf("only supports a single argument") //nolint:goerr113
+		return errors.New("only supports a single argument") //nolint:goerr113
 	}
 	return test.Unit(ctx, filter)
 }

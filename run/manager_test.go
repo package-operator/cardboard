@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -63,11 +64,11 @@ func (m *MyThing) TestWithDepMustPanic(ctx context.Context, args []string) error
 
 func (m *MyThing) private(_ string) {}
 func (m *MyThing) privateErr(_ string) error {
-	return fmt.Errorf("explosion")
+	return errors.New("explosion")
 }
 
 func (m *MyThing) privateMustPanic(_ string) {
-	Must(fmt.Errorf("explosion"))
+	Must(errors.New("explosion"))
 }
 
 func (m MyThing) privateReceiverNotPointer(_ string) {
