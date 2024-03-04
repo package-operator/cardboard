@@ -21,7 +21,9 @@ func Test_newDependencyRun_Serial(t *testing.T) {
 			Fn(func() error { return errTest }),
 			Fn(func() error { return errTest }),
 		)
-		require.EqualError(t, err, "running pkg.package-operator.run/cardboard/run.Test_newDependencyRun_Serial.func1.1(): banana")
+		require.EqualError(t, err,
+			"running pkg.package-operator.run/cardboard/run.Test_newDependencyRun_Serial.func1.1(): banana",
+		)
 	})
 
 	t.Run("simple", func(t *testing.T) {

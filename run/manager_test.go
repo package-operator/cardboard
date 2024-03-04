@@ -139,7 +139,8 @@ func TestManager_Run_Error(t *testing.T) {
 	os.Args = []string{"", "MyThing:TestWithDepErr"}
 	ctx := context.Background()
 	require.EqualError(t, mgr.Run(ctx),
-		`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.TestWithDepErr([]string{}): running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.privateErr("banana"): explosion`)
+		`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.TestWithDepErr([]string{}): `+
+			`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.privateErr("banana"): explosion`)
 
 	assert.Equal(t, ``, stderrBuf.String())
 	// strip [took x] from output, because it is not stable.
@@ -163,7 +164,8 @@ func TestManager_Run_MustPanic(t *testing.T) {
 	os.Args = []string{"", "MyThing:TestWithDepMustPanic"}
 	ctx := context.Background()
 	require.EqualError(t, mgr.Run(ctx),
-		`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.TestWithDepMustPanic([]string{}): running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.privateMustPanic("banana"): explosion`)
+		`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.TestWithDepMustPanic([]string{}): `+
+			`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.privateMustPanic("banana"): explosion`)
 
 	assert.Equal(t, ``, stderrBuf.String())
 	// strip [took x] from output, because it is not stable.

@@ -108,7 +108,9 @@ func (r *Runner) run(stdout, stderr io.Writer, stdin io.Reader, cmd string, args
 	if cmdRan(err) {
 		code := exitStatus(err)
 		if stderrBuf.Len() > 0 {
-			return fmt.Errorf(`running "%s %s" failed with exit code %d: %s`, cmd, strings.Join(args, " "), code, strings.TrimRight(stderrBuf.String(), "\n"))
+			return fmt.Errorf(`running "%s %s" failed with exit code %d: %s`,
+				cmd, strings.Join(args, " "), code, strings.TrimRight(stderrBuf.String(), "\n"),
+			)
 		}
 		return fmt.Errorf(`running "%s %s" failed with exit code %d`, cmd, strings.Join(args, " "), code)
 	}
