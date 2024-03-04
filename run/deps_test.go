@@ -115,7 +115,6 @@ func Test_newDependencyRun_Parallel(t *testing.T) {
 			Fn(func() error { return errTest }),
 		)
 
-		//nolint:errorlint
 		el := err.(unwrapErrors).Unwrap()
 		require.Len(t, el, 2)
 
@@ -230,7 +229,7 @@ func Test_funcID(t *testing.T) {
 	}{
 		{
 			name:     "closure",
-			fn:       func(test string) {},
+			fn:       func(string) {},
 			args:     []any{"test"},
 			expected: `pkg.package-operator.run/cardboard/run.Test_funcID.func1("test")`,
 		},

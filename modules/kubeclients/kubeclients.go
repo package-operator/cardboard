@@ -86,10 +86,7 @@ func (kc *KubeClients) Run(_ context.Context) error {
 	}
 
 	// Create Controller Runtime Client
-	kc.CtrlClient, err = client.New(kc.RestConfig, client.Options{
-		Scheme: kc.Scheme,
-	})
-
+	kc.CtrlClient, err = client.New(kc.RestConfig, client.Options{Scheme: kc.Scheme})
 	if err != nil {
 		return fmt.Errorf("creating new ctrl client: %w", err)
 	}

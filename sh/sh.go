@@ -143,7 +143,6 @@ func exitStatus(err error) int {
 	if err == nil {
 		return 0
 	}
-	//nolint:errorlint
 	if e, ok := err.(exitStatusAccessor); ok {
 		return e.ExitStatus()
 	}

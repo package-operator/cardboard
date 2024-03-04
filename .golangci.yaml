@@ -20,16 +20,13 @@ linters:
   #- godox            # Not that useful/false positives.
   #- gomnd            # The annoy is strong.
   #- gomoddirectives  # Not that useful/false positives.
-  #- interfacebloat   # WE do bloaty interfaces.
   #- inamedparam      # Not that useful.
+  #- interfacebloat   # WE do bloaty interfaces.
   #- ireturn          # Not that useful/false positives.
   #- lll              # Could be nice in the future.
-  #- musttag          # Dislikes our deps.
   #- nakedret         # Naked return good return.
   #- nlreturn         # Could be nice in the future.
   #- nonamedreturns   # Named return good return.
-  #- rowserrcheck     # No SQL here.
-  #- sqlclosecheck    # No SQL here.
   #- tagliatelle      # Reports issues that are not right for us.
   #- testpackage      # Could be nice in the future.
   #- unparam          # Not that useful/false positives.
@@ -37,9 +34,6 @@ linters:
   #- wrapcheck        # Not that useful/false positives.
   #- wsl              # Not that useful/false positives.
   #- zerologlint      # No zerolog here.
-  #- goerr113
-  #- paralleltest     # not all tests here can be executed in parallel
-  #- tparallel
   enable:
   - asasalint
   - asciicheck
@@ -66,6 +60,9 @@ linters:
   - gofumpt
   - goheader
   - goimports
+  - gomodguard
+  - goprintffuncname
+  - gosimple
   - gosmopolitan
   - govet
   - grouper
@@ -94,6 +91,7 @@ linters:
   - sloglint
   - staticcheck
   - stylecheck
+  - sqlclosecheck
   - tagalign
   - tenv
   - testableexamples

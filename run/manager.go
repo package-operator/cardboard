@@ -3,6 +3,7 @@ package run
 import (
 	"context"
 	"embed"
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/doc"
@@ -273,13 +274,13 @@ func (m *Manager) registerAll(targetGroups ...any) error {
 
 func (m *Manager) register(targetGroup any) error {
 	if targetGroup == nil {
-		return fmt.Errorf("targetGroup must not be nil")
+		return errors.New("targetGroup must not be nil")
 	}
 
 	targetGroupType := reflect.TypeOf(targetGroup)
 	if targetGroupType.Kind() != reflect.Pointer ||
 		targetGroupType.Elem().Kind() != reflect.Struct {
-		return fmt.Errorf("targetGroup must be pointer to struct")
+		return errors.New("targetGroup must be pointer to struct")
 	}
 
 	targetGroupValue := reflect.ValueOf(targetGroup)
