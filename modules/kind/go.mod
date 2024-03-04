@@ -2,18 +2,18 @@ module pkg.package-operator.run/cardboard/modules/kind
 
 go 1.21
 
+replace (
+	pkg.package-operator.run/cardboard => ../../
+	pkg.package-operator.run/cardboard/kubeutils => ../../kubeutils
+	pkg.package-operator.run/cardboard/modules/kubeclients => ../kubeclients
+)
+
 require (
 	pkg.package-operator.run/cardboard/kubeutils v0.0.0-20240215101355-db99fcc2d2ce
 	pkg.package-operator.run/cardboard/modules/kubeclients v0.0.0-20240215101355-db99fcc2d2ce
 	sigs.k8s.io/controller-runtime v0.17.2
 	sigs.k8s.io/kind v0.22.0
 	sigs.k8s.io/yaml v1.4.0
-)
-
-replace (
-	pkg.package-operator.run/cardboard => ../../
-	pkg.package-operator.run/cardboard/kubeutils => ../../kubeutils
-	pkg.package-operator.run/cardboard/modules/kubeclients => ../kubeclients
 )
 
 require (
@@ -27,9 +27,9 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect
-	github.com/go-openapi/jsonpointer v0.20.2 // indirect
-	github.com/go-openapi/jsonreference v0.20.4 // indirect
-	github.com/go-openapi/swag v0.22.9 // indirect
+	github.com/go-openapi/jsonpointer v0.20.3 // indirect
+	github.com/go-openapi/jsonreference v0.20.5 // indirect
+	github.com/go-openapi/swag v0.22.10 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
@@ -78,7 +78,7 @@ require (
 	k8s.io/client-go v0.29.2 // indirect
 	k8s.io/component-base v0.29.2 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20240224005224-582cce78233b // indirect
+	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
