@@ -64,7 +64,7 @@ func (oci *OCI) Load(path string) error {
 }
 
 func (oci *OCI) ID() string {
-	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules/oci.OCI{name:%s}", oci.tag)
+	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules/oci.OCI{tag:%s}", oci.tag)
 }
 
 // Returns a Build dependency.
