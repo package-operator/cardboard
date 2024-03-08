@@ -19,9 +19,7 @@ const (
 
 // Open Container Image.
 type OCI struct {
-	name             string
-	registries       []string
-	tags             []string
+	tag              string
 	containerFile    string
 	workDir          string
 	cranePush        bool
@@ -31,18 +29,6 @@ type OCI struct {
 
 type Option interface {
 	ApplyToOCI(oci *OCI)
-}
-
-type WithTags []string
-
-func (t WithTags) ApplyToOCI(oci *OCI) {
-	oci.tags = t
-}
-
-type WithRegistries []string
-
-func (t WithRegistries) ApplyToOCI(oci *OCI) {
-	oci.registries = t
 }
 
 type WithContainerFile string
@@ -57,17 +43,14 @@ func (cf WithCranePush) ApplyToOCI(oci *OCI) {
 	oci.cranePush = true
 }
 
-func NewOCI(name, workDir string, opts ...Option) *OCI {
+func NewOCI(tag, workDir string, opts ...Option) *OCI {
 	oci := &OCI{
-		name:    name,
+		tag:     tag,
 		workDir: workDir,
 		runner:  sh.New(sh.WithWorkDir(workDir)),
 	}
 	for _, opt := range opts {
 		opt.ApplyToOCI(oci)
-	}
-	if len(oci.tags) == 0 {
-		oci.tags = []string{"latest"}
 	}
 	return oci
 }
@@ -81,7 +64,7 @@ func (oci *OCI) Load(path string) error {
 }
 
 func (oci *OCI) ID() string {
-	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules/oci.OCI{name:%s}", oci.name)
+	return fmt.Sprintf("pkg.package-operator.run/cardboard/modules/oci.OCI{name:%s}", oci.tag)
 }
 
 // Returns a Build dependency.
@@ -97,10 +80,8 @@ func (oci *OCI) Build() error {
 	}
 
 	buildCmdArgs := []string{"build"}
-	tags := registryNameTags(oci.name, oci.registries, oci.tags)
-	for _, t := range tags {
-		buildCmdArgs = append(buildCmdArgs, "-t", t)
-	}
+	buildCmdArgs = append(buildCmdArgs, "-t", oci.tag)
+
 	if oci.containerFile != "" {
 		buildCmdArgs = append(buildCmdArgs, "-f", oci.containerFile)
 	}
@@ -111,7 +92,7 @@ func (oci *OCI) Build() error {
 
 	imgSaveArgs := []string{
 		"image", "save",
-		"-o", ociTarFilename, tags[0],
+		"-o", ociTarFilename, oci.tag,
 	}
 	if err := oci.runner.Run(string(cr), imgSaveArgs...); err != nil {
 		return err
@@ -128,13 +109,11 @@ func (oci *OCI) Push() error {
 }
 
 func (oci *OCI) pushWithCrane() error {
-	tags := registryNameTags(oci.name, oci.registries, oci.tags)
-	for _, t := range tags {
-		args := []string{"push", ociTarFilename, t}
-		if err := oci.runner.Run("crane", args...); err != nil {
-			return err
-		}
+	args := []string{"push", ociTarFilename, oci.tag}
+	if err := oci.runner.Run("crane", args...); err != nil {
+		return err
 	}
+
 	return nil
 }
 
@@ -144,26 +123,14 @@ func (oci *OCI) pushWithCR() error {
 		return err
 	}
 
-	tags := registryNameTags(oci.name, oci.registries, oci.tags)
-	for _, t := range tags {
-		args := []string{"push"}
-		if cr == kubeutils.ContainerRuntimePodman {
-			args = append(args, "--digestfile="+ociDigestFile)
-		}
-		args = append(args, t)
-		if err := oci.runner.Run(string(cr), args...); err != nil {
-			return err
-		}
+	args := []string{"push"}
+	if cr == kubeutils.ContainerRuntimePodman {
+		args = append(args, "--digestfile="+ociDigestFile)
 	}
-	return nil
-}
+	args = append(args, oci.tag)
+	if err := oci.runner.Run(string(cr), args...); err != nil {
+		return err
+	}
 
-func registryNameTags(name string, registries []string, tags []string) []string {
-	var out []string
-	for _, r := range registries {
-		for _, t := range tags {
-			out = append(out, fmt.Sprintf("%s/%s:%s", r, name, t))
-		}
-	}
-	return out
+	return nil
 }
