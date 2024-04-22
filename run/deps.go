@@ -127,7 +127,6 @@ func (r *dependencyRun) Parallel(ctx context.Context, parent DependencyIDer, dep
 		localDeps[i] = r.get(dep, parent.ID())
 	}
 	for _, dep := range localDeps {
-		dep := dep
 		go func() {
 			defer wg.Done()
 			if err := dep.Run(ctx); err != nil {
