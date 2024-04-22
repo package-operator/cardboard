@@ -38,6 +38,7 @@ linters:
   - asciicheck
   - bidichk
   - bodyclose
+  - copyloopvar
   - decorder
   - dupword
   - durationcheck
@@ -90,7 +91,6 @@ linters:
   - revive
   - rowserrcheck
   - sloglint
-  - spancheck
   - staticcheck
   - stylecheck
   - sqlclosecheck
@@ -113,8 +113,6 @@ issues:
     - path: 'integration\/.+\.go|run\/target_test.go'
       linters:
       - paralleltest
-run:
-  skip-files: [ "zz_generated.deepcopy.go$" ]
 linters-settings:
   goimports:
     local-prefixes: package-operator.run

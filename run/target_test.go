@@ -194,7 +194,6 @@ func TestGlob(t *testing.T) {
 	}
 
 	for _, c := range table {
-		c := c
 		t.Run(c.desc, func(t *testing.T) {
 			t.Parallel()
 			for i := range c.sources {
@@ -305,7 +304,6 @@ func TestPath(t *testing.T) {
 	}
 
 	for _, c := range table {
-		c := c
 		t.Run(c.desc, func(t *testing.T) {
 			t.Parallel()
 			for i := range c.sources {
@@ -443,7 +441,6 @@ func TestDir(t *testing.T) {
 	}
 
 	for _, c := range table {
-		c := c
 		t.Run(c.desc, func(t *testing.T) {
 			t.Parallel()
 			sources := make([]string, len(c.sources))

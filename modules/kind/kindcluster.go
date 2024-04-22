@@ -192,7 +192,6 @@ func (c *Cluster) LoadImageFromTar(filePath string) error {
 	}
 
 	for _, node := range nodesList {
-		node := node
 		if err := loadImageTarIntoNode(filePath, node); err != nil {
 			return fmt.Errorf("failed to load the image: %w", err)
 		}

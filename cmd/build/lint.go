@@ -29,13 +29,13 @@ func (l Lint) goModTidyAll(ctx context.Context) error {
 }
 
 func (Lint) glciFix() error {
-	return shr.Run("golangci-lint", "run", "--fix", "--deadline=15m",
+	return shr.Run("golangci-lint", "run", "--fix",
 		"./...", "./kubeutils/...", "./modules/kind/...", "./modules/kubeclients/...", "./modules/oci/...",
 	)
 }
 
 func (Lint) glciCheck() error {
-	return shr.Run("golangci-lint", "run", "--deadline=15m",
+	return shr.Run("golangci-lint", "run",
 		"./...", "./kubeutils/...", "./modules/kind/...", "./modules/kubeclients/...", "./modules/oci/...",
 	)
 }

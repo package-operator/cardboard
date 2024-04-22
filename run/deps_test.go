@@ -254,7 +254,6 @@ func Test_funcID(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			out := funcID(test.fn, test.args...)
