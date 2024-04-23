@@ -11,7 +11,7 @@ replace (
 
 require (
 	k8s.io/apiextensions-apiserver v0.29.4
-	k8s.io/apimachinery v0.29.4
+	k8s.io/apimachinery v0.30.0
 	k8s.io/client-go v0.29.4
 	pkg.package-operator.run/cardboard/kubeutils v0.0.0-20240215101355-db99fcc2d2ce
 	sigs.k8s.io/controller-runtime v0.17.3
@@ -63,7 +63,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.29.4 // indirect
+	k8s.io/api v0.30.0 // indirect
 	k8s.io/component-base v0.29.4 // indirect
 	k8s.io/klog/v2 v2.120.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240411171206-dc4e619f62f3 // indirect
