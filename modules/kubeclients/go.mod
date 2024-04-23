@@ -11,7 +11,7 @@ replace (
 
 require (
 	k8s.io/apiextensions-apiserver v0.29.4
-	k8s.io/apimachinery v0.29.4
+	k8s.io/apimachinery v0.30.0
 	k8s.io/client-go v0.29.4
 	pkg.package-operator.run/cardboard/kubeutils v0.0.0-20240215101355-db99fcc2d2ce
 	sigs.k8s.io/controller-runtime v0.17.3
