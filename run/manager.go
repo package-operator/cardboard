@@ -285,7 +285,7 @@ func (m *Manager) register(targetGroup any) error {
 
 	targetGroupValue := reflect.ValueOf(targetGroup)
 	typeID := targetGroupType.Elem().Name()
-	for i := 0; i < targetGroupType.NumMethod(); i++ {
+	for i := range targetGroupType.NumMethod() {
 		method := targetGroupType.Method(i)
 		methodValue := targetGroupValue.MethodByName(method.Name)
 		if err := m.registerMeth(typeID, targetGroup, method, methodValue); err != nil {
