@@ -7,7 +7,7 @@ toolchain go1.22.2
 require (
 	github.com/go-logr/logr v1.4.2
 	github.com/stretchr/testify v1.9.0
-	k8s.io/api v0.30.2
+	k8s.io/api v0.30.3
 	k8s.io/apimachinery v0.30.3
 	sigs.k8s.io/controller-runtime v0.18.4
 	sigs.k8s.io/yaml v1.4.0
@@ -44,7 +44,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/client-go v0.30.2 // indirect
+	k8s.io/client-go v0.30.3 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240423202451-8948a665c108 // indirect
 	k8s.io/utils v0.0.0-20240423183400-0849a56e8f22 // indirect
