@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -43,8 +44,37 @@ func (r *Runner) apply(opts ...RunnerOption) {
 	}
 }
 
+type logWriter struct {
+	log *log.Logger
+}
+
+func (lw logWriter) Write(p []byte) (n int, err error) {
+	msgLines := strings.Split(string(p), "\n")
+	if len(msgLines) > 0 && msgLines[len(msgLines)-1] == "" {
+		msgLines = msgLines[:len(msgLines)-1]
+	}
+	for _, line := range msgLines {
+		lw.log.Print(line)
+	}
+	return len(p), nil
+}
+
+// Returns writer that writes in "YYYY/MM/DD HH:MM:SS.UUUUUU [taskName streamName] " format. (time is in UTC)
+func taskWriter(w io.Writer, taskName string, streamName string) io.Writer {
+	taskLog := log.New(w, "["+taskName+" "+streamName+"] ", log.Ldate|log.Ltime|log.LUTC|log.Lmicroseconds|log.Lmsgprefix)
+	return logWriter{log: taskLog}
+}
+
 func (r *Runner) Run(cmd string, args ...string) error {
-	return r.run(outOrStdoutIfNil(r.stdout), outOrStderrIfNil(r.stderr), nil, cmd, args...)
+	stdout := outOrStdoutIfNil(r.stdout)
+	stderr := outOrStderrIfNil(r.stderr)
+
+	if os.Getenv("CARDBOARD_NO_LOG_PREFIX") == "" {
+		stdout = taskWriter(stdout, cmd, "OUT")
+		stderr = taskWriter(stderr, cmd, "ERR")
+	}
+
+	return r.run(stdout, stderr, nil, cmd, args...)
 }
 
 func (r *Runner) Bash(script ...string) error {
