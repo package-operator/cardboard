@@ -6,11 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 type Runner struct {
@@ -44,25 +44,30 @@ func (r *Runner) apply(opts ...RunnerOption) {
 	}
 }
 
-type logWriter struct {
-	log *log.Logger
+type taskWriter struct {
+	w          io.Writer
+	taskName   string
+	streamName string
 }
 
-func (lw logWriter) Write(p []byte) (n int, err error) {
+// prefixWriter prefixes each line of the output with a timestamp and the task name.
+func (t taskWriter) Write(p []byte) (n int, err error) {
 	msgLines := strings.Split(string(p), "\n")
+
+	// if original message ends with a newline, remove the last empty line
 	if len(msgLines) > 0 && msgLines[len(msgLines)-1] == "" {
 		msgLines = msgLines[:len(msgLines)-1]
 	}
+
+	dateTime := time.Now().UTC().Format("2006-01-02 15:04:05.000")
 	for _, line := range msgLines {
-		lw.log.Print(line)
+		prefixedLine := fmt.Sprintf("%s [%s %s] %s\n", dateTime, t.taskName, t.streamName, line)
+		_, err := t.w.Write([]byte(prefixedLine))
+		if err != nil {
+			return len(p), err
+		}
 	}
 	return len(p), nil
-}
-
-// Returns writer that writes in "YYYY/MM/DD HH:MM:SS.UUUUUU [taskName streamName] " format. (time is in UTC)
-func taskWriter(w io.Writer, taskName string, streamName string) io.Writer {
-	taskLog := log.New(w, "["+taskName+" "+streamName+"] ", log.Ldate|log.Ltime|log.LUTC|log.Lmicroseconds|log.Lmsgprefix)
-	return logWriter{log: taskLog}
 }
 
 func (r *Runner) Run(cmd string, args ...string) error {
@@ -70,8 +75,8 @@ func (r *Runner) Run(cmd string, args ...string) error {
 	stderr := outOrStderrIfNil(r.stderr)
 
 	if os.Getenv("CARDBOARD_NO_LOG_PREFIX") == "" {
-		stdout = taskWriter(stdout, cmd, "OUT")
-		stderr = taskWriter(stderr, cmd, "ERR")
+		stdout = taskWriter{stdout, cmd, "OUT"}
+		stderr = taskWriter{stderr, cmd, "ERR"}
 	}
 
 	return r.run(stdout, stderr, nil, cmd, args...)
