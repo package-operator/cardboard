@@ -49,7 +49,6 @@ linters:
   - errchkjson
   - errname
   - errorlint
-  - exportloopref
   - fatcontext
   - forbidigo
   - ginkgolinter
