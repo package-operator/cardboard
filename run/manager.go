@@ -259,7 +259,7 @@ func (m *Manager) run(ctx context.Context) error {
 
 	// Execute actual target.
 	err := m.Call(ctx, args[1], args[2:])
-	fmt.Fprint(m.stdout, m.dr.Report())
+	fmt.Fprint(m.stderr, m.dr.Report())
 	return err
 }
 

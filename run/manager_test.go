@@ -118,13 +118,13 @@ func TestManager_Run(t *testing.T) {
 	ctx := context.Background()
 	require.NoError(t, mgr.Run(ctx))
 
-	assert.Equal(t, ``, stderrBuf.String())
+	assert.Equal(t, ``, stdoutBuf.String())
 	// strip [took x] from output, because it is not stable.
 	tookRegEx := regexp.MustCompile(`(?m) \[took .*\]`)
 	assert.Equal(t, `Cardboard Report:
 [OK] pkg.package-operator.run/cardboard/run.MyThing{field:hans}.TestWithDep([]string{})
 └── [OK] pkg.package-operator.run/cardboard/run.MyThing{field:hans}.private("banana")
-`, string(tookRegEx.ReplaceAll(stdoutBuf.Bytes(), nil)))
+`, string(tookRegEx.ReplaceAll(stderrBuf.Bytes(), nil)))
 }
 
 func TestManager_Run_Error(t *testing.T) {
@@ -142,14 +142,14 @@ func TestManager_Run_Error(t *testing.T) {
 		`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.TestWithDepErr([]string{}): `+
 			`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.privateErr("banana"): explosion`)
 
-	assert.Equal(t, ``, stderrBuf.String())
+	assert.Equal(t, ``, stdoutBuf.String())
 	// strip [took x] from output, because it is not stable.
 	tookRegEx := regexp.MustCompile(`(?m) \[took .*\]`)
 	assert.Equal(t, `Cardboard Report:
 [ERR] pkg.package-operator.run/cardboard/run.MyThing{field:hans}.TestWithDepErr([]string{})
 └── [ERR] pkg.package-operator.run/cardboard/run.MyThing{field:hans}.privateErr("banana")
     explosion
-`, string(tookRegEx.ReplaceAll(stdoutBuf.Bytes(), nil)))
+`, string(tookRegEx.ReplaceAll(stderrBuf.Bytes(), nil)))
 }
 
 func TestManager_Run_MustPanic(t *testing.T) {
@@ -167,14 +167,14 @@ func TestManager_Run_MustPanic(t *testing.T) {
 		`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.TestWithDepMustPanic([]string{}): `+
 			`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.privateMustPanic("banana"): explosion`)
 
-	assert.Equal(t, ``, stderrBuf.String())
+	assert.Equal(t, ``, stdoutBuf.String())
 	// strip [took x] from output, because it is not stable.
 	tookRegEx := regexp.MustCompile(`(?m) \[took .*\]`)
 	assert.Equal(t, `Cardboard Report:
 [ERR] pkg.package-operator.run/cardboard/run.MyThing{field:hans}.TestWithDepMustPanic([]string{})
 └── [ERR] pkg.package-operator.run/cardboard/run.MyThing{field:hans}.privateMustPanic("banana")
     explosion
-`, string(tookRegEx.ReplaceAll(stdoutBuf.Bytes(), nil)))
+`, string(tookRegEx.ReplaceAll(stderrBuf.Bytes(), nil)))
 }
 
 func TestManager_Run_help_withoutSource(t *testing.T) {
