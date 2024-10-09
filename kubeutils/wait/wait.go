@@ -156,7 +156,7 @@ func (w *Waiter) WaitForObject(
 		func(ctx context.Context) (done bool, err error) {
 			err = w.client.Get(ctx, client.ObjectKeyFromObject(object), object)
 			if err != nil {
-				//nolint:nilerr // retry on transient errors
+				log.Info("waiting for object errored", "key", key, "err", err)
 				return false, nil
 			}
 
