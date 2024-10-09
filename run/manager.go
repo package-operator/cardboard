@@ -370,7 +370,7 @@ func (m *Manager) registerMeth(
 
 func commentsFromSource(source embed.FS) (*doc.Package, error) {
 	fileSet := token.NewFileSet()
-	files := map[string]*ast.File{}
+	files := []*ast.File{}
 
 	entries, err := source.ReadDir(".")
 	if err != nil {
@@ -390,11 +390,8 @@ func commentsFromSource(source embed.FS) (*doc.Package, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parse AST: %w", err)
 		}
-		files[entry.Name()] = astFile
+		files = append(files, astFile)
 	}
 
-	// This will fail due to unresolved imports,
-	// but we don't care for just generating documentation.
-	apkg, _ := ast.NewPackage(fileSet, files, nil, nil)
-	return doc.New(apkg, "", 0), nil
+	return doc.NewFromFiles(fileSet, files, "")
 }
