@@ -52,12 +52,7 @@ type taskWriter struct {
 
 // taskWriter prefixes each line of the output with a timestamp and the task name.
 func (t taskWriter) Write(p []byte) (n int, err error) {
-	msgLines := bytes.Split(p, []byte{'\n'})
-
-	// if original message ends with a newline, remove the last empty line
-	if len(msgLines) > 0 && len(msgLines[len(msgLines)-1]) == 0 {
-		msgLines = msgLines[:len(msgLines)-1]
-	}
+	msgLines := bytes.Split(bytes.TrimRight(p, "\n"), []byte{'\n'})
 
 	dateTime := time.Now().UTC().Format("2006-01-02 15:04:05.000")
 	prefix := fmt.Sprintf("%s [%s %s] ", dateTime, t.taskName, t.streamName)
