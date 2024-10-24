@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 type Runner struct {
@@ -43,8 +44,42 @@ func (r *Runner) apply(opts ...RunnerOption) {
 	}
 }
 
+type taskWriter struct {
+	w          io.Writer
+	taskName   string
+	streamName string
+}
+
+// taskWriter prefixes each line of the output with a timestamp and the task name.
+func (t taskWriter) Write(p []byte) (n int, err error) {
+	msgLines := bytes.Split(bytes.TrimRight(p, "\n"), []byte{'\n'})
+
+	dateTime := time.Now().UTC().Format("2006-01-02 15:04:05.000")
+	prefix := fmt.Sprintf("%s [%s %s] ", dateTime, t.taskName, t.streamName)
+	var prefixedMsg bytes.Buffer
+	for _, line := range msgLines {
+		prefixedMsg.WriteString(prefix)
+		prefixedMsg.Write(line)
+		prefixedMsg.WriteByte('\n')
+	}
+
+	_, err = prefixedMsg.WriteTo(t.w)
+	if err != nil {
+		return 0, err
+	}
+	return len(p), nil
+}
+
 func (r *Runner) Run(cmd string, args ...string) error {
-	return r.run(outOrStdoutIfNil(r.stdout), outOrStderrIfNil(r.stderr), nil, cmd, args...)
+	stdout := outOrStdoutIfNil(r.stdout)
+	stderr := outOrStderrIfNil(r.stderr)
+
+	if os.Getenv("CARDBOARD_NO_LOG_PREFIX") == "" {
+		stdout = taskWriter{stdout, cmd, "OUT"}
+		stderr = taskWriter{stderr, cmd, "ERR"}
+	}
+
+	return r.run(stdout, stderr, nil, cmd, args...)
 }
 
 func (r *Runner) Bash(script ...string) error {
