@@ -13,7 +13,7 @@ replace (
 require (
 	pkg.package-operator.run/cardboard/kubeutils v0.0.3
 	pkg.package-operator.run/cardboard/modules/kubeclients v0.0.3
-	sigs.k8s.io/controller-runtime v0.19.0
+	sigs.k8s.io/controller-runtime v0.19.1
 	sigs.k8s.io/kind v0.25.0
 	sigs.k8s.io/yaml v1.4.0
 )
