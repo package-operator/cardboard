@@ -6,7 +6,7 @@ toolchain go1.22.2
 
 require (
 	github.com/go-logr/logr v1.4.2
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	k8s.io/api v0.31.1
 	k8s.io/apimachinery v0.31.1
 	sigs.k8s.io/controller-runtime v0.19.3
