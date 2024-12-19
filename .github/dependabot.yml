@@ -9,6 +9,11 @@ updates:
     dependency-name: "*"
   assignees: [ eqrx ]
   open-pull-requests-limit: 100
+  groups:
+    kube:
+      applies-to: version-updates
+      patterns:
+      - k8s.io/*
 - package-ecosystem: gomod
   directory: /kubeutils
   schedule:
@@ -18,6 +23,11 @@ updates:
     dependency-name: "*"
   assignees: [ eqrx ]
   open-pull-requests-limit: 100
+  groups:
+    kube:
+      applies-to: version-updates
+      patterns:
+      - k8s.io/*
 - package-ecosystem: gomod
   directory: /modules/kind
   schedule:
@@ -27,6 +37,11 @@ updates:
     dependency-name: "*"
   assignees: [ eqrx ]
   open-pull-requests-limit: 100
+  groups:
+    kube:
+      applies-to: version-updates
+      patterns:
+      - k8s.io/*
 - package-ecosystem: gomod
   directory: /modules/kubeclients
   schedule:
@@ -36,6 +51,11 @@ updates:
     dependency-name: "*"
   assignees: [ eqrx ]
   open-pull-requests-limit: 100
+  groups:
+    kube:
+      applies-to: version-updates
+      patterns:
+      - k8s.io/*
 - package-ecosystem: gomod
   directory: /modules/oci
   schedule:
@@ -45,6 +65,11 @@ updates:
     dependency-name: "*"
   assignees: [ eqrx ]
   open-pull-requests-limit: 100
+  groups:
+    kube:
+      applies-to: version-updates
+      patterns:
+      - k8s.io/*
 - package-ecosystem: github-actions
   directory: /
   schedule:
