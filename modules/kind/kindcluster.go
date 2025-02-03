@@ -239,16 +239,4 @@ func sanitizeClusterConfig(conf *kindv1alpha4.Cluster) {
 
 func defaultClusterConfig(conf *kindv1alpha4.Cluster) {
 	kindv1alpha4.SetDefaultsCluster(conf)
-	// https://github.com/kubernetes-sigs/kind/issues/2411
-	if _, err := os.Lstat("/dev/dm-0"); err == nil {
-		for i := range conf.Nodes {
-			conf.Nodes[i].ExtraMounts = []kindv1alpha4.Mount{
-				{
-					HostPath:      "/dev/dm-0",
-					ContainerPath: "/dev/dm-0",
-					Propagation:   kindv1alpha4.MountPropagationHostToContainer,
-				},
-			}
-		}
-	}
 }
