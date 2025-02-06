@@ -7,7 +7,8 @@ updates:
   allow:
   - dependency-type: all
     dependency-name: "*"
-  assignees: [ eqrx ]
+  reviewers:
+  - package-operator/core-maintainers/dependency-maintainers
   open-pull-requests-limit: 100
   groups:
     kube:
@@ -23,7 +24,8 @@ updates:
   allow:
   - dependency-type: all
     dependency-name: "*"
-  assignees: [ eqrx ]
+  reviewers:
+  - package-operator/core-maintainers/dependency-maintainers
   open-pull-requests-limit: 100
   groups:
     kube:
@@ -39,7 +41,8 @@ updates:
   allow:
   - dependency-type: all
     dependency-name: "*"
-  assignees: [ eqrx ]
+  reviewers:
+  - package-operator/core-maintainers/dependency-maintainers
   open-pull-requests-limit: 100
   groups:
     kube:
@@ -55,7 +58,8 @@ updates:
   allow:
   - dependency-type: all
     dependency-name: "*"
-  assignees: [ eqrx ]
+  reviewers:
+  - package-operator/core-maintainers/dependency-maintainers
   open-pull-requests-limit: 100
   groups:
     kube:
@@ -71,7 +75,8 @@ updates:
   allow:
   - dependency-type: all
     dependency-name: "*"
-  assignees: [ eqrx ]
+  reviewers:
+  - package-operator/core-maintainers/dependency-maintainers
   open-pull-requests-limit: 100
   groups:
     kube:
@@ -84,7 +89,8 @@ updates:
   directory: /
   schedule:
     interval: daily
-  assignees: [ eqrx ]
+  reviewers:
+  - package-operator/core-maintainers/dependency-maintainers
   open-pull-requests-limit: 100
   commit-message:
     prefix: "build(deps)"
