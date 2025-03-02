@@ -55,7 +55,7 @@ func (t taskWriter) Write(p []byte) (n int, err error) {
 	msgLines := bytes.Split(bytes.TrimRight(p, "\n"), []byte{'\n'})
 
 	dateTime := time.Now().UTC().Format("2006-01-02 15:04:05.000")
-	prefix := fmt.Sprintf("%s [%s %s] ", dateTime, t.taskName, t.streamName)
+	prefix := fmt.Sprintf("%s [%s %s] ", dateTime, t.streamName, t.taskName)
 	var prefixedMsg bytes.Buffer
 	for _, line := range msgLines {
 		prefixedMsg.WriteString(prefix)
