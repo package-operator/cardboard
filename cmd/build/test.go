@@ -29,6 +29,6 @@ func (t Test) Unit(_ context.Context, filter string) error {
 		sh.WithEnvironment{"CGO_ENABLED": "1"},
 	).Bash(
 		"set -euo pipefail",
-		fmt.Sprintf("go test %s ./... 2>&1 | tee .cache/unit/gotest.log | gotestfmt --hide=empty-packages", argStr),
+		fmt.Sprintf("go test %s ./... 2>&1 | tee .cache/unit/gotest.log | gotestfmt --hide=all", argStr),
 	)
 }
