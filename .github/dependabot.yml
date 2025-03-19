@@ -1,7 +1,12 @@
 version: 2
 updates:
 - package-ecosystem: gomod
-  directory: /
+  directories:
+  - '/'
+  - '/modules/oci'
+  - '/modules/kubeclients'
+  - '/modules/kind'
+  - '/kubeutils'
   schedule:
     interval: daily
   allow:
@@ -15,74 +20,10 @@ updates:
       applies-to: version-updates
       patterns:
       - k8s.io/*
-  commit-message:
-    prefix: "build(deps)"
-- package-ecosystem: gomod
-  directory: /kubeutils
-  schedule:
-    interval: daily
-  allow:
-  - dependency-type: all
-    dependency-name: "*"
-  reviewers:
-  - package-operator/core-maintainers/dependency-maintainers
-  open-pull-requests-limit: 100
-  groups:
-    kube:
-      applies-to: version-updates
-      patterns:
-      - k8s.io/*
-  commit-message:
-    prefix: "build(deps)"
-- package-ecosystem: gomod
-  directory: /modules/kind
-  schedule:
-    interval: daily
-  allow:
-  - dependency-type: all
-    dependency-name: "*"
-  reviewers:
-  - package-operator/core-maintainers/dependency-maintainers
-  open-pull-requests-limit: 100
-  groups:
-    kube:
-      applies-to: version-updates
-      patterns:
-      - k8s.io/*
-  commit-message:
-    prefix: "build(deps)"
-- package-ecosystem: gomod
-  directory: /modules/kubeclients
-  schedule:
-    interval: daily
-  allow:
-  - dependency-type: all
-    dependency-name: "*"
-  reviewers:
-  - package-operator/core-maintainers/dependency-maintainers
-  open-pull-requests-limit: 100
-  groups:
-    kube:
-      applies-to: version-updates
-      patterns:
-      - k8s.io/*
-  commit-message:
-    prefix: "build(deps)"
-- package-ecosystem: gomod
-  directory: /modules/oci
-  schedule:
-    interval: daily
-  allow:
-  - dependency-type: all
-    dependency-name: "*"
-  reviewers:
-  - package-operator/core-maintainers/dependency-maintainers
-  open-pull-requests-limit: 100
-  groups:
-    kube:
-      applies-to: version-updates
-      patterns:
-      - k8s.io/*
+    golangx:
+        applies-to: version-updates
+        patterns:
+          - golang.org/x/*
   commit-message:
     prefix: "build(deps)"
 - package-ecosystem: github-actions
