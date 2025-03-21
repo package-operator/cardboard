@@ -9,11 +9,7 @@ import (
 
 func TestNewestModTime(t *testing.T) {
 	t.Parallel()
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatalf("error creating temp dir: %s", err.Error())
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 	for _, name := range []string{"a", "b", "c", "d"} {
 		out := filepath.Join(dir, name)
 		if err := os.WriteFile(out, []byte("hi!"), 0o644); err != nil {
@@ -57,11 +53,7 @@ func TestNewestModTime(t *testing.T) {
 
 func TestOldestModTime(t *testing.T) {
 	t.Parallel()
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatalf("error creating temp dir: %s", err.Error())
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 	for _, name := range []string{"a", "b", "c", "d"} {
 		out := filepath.Join(dir, name)
 		if err := os.WriteFile(out, []byte("hi!"), 0o644); err != nil {
