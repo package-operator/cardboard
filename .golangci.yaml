@@ -23,11 +23,12 @@ linters:
   #- inamedparam      # Not that useful.
   #- interfacebloat   # WE do bloaty interfaces.
   #- ireturn          # Not that useful/false positives.
-  #- mnd            # The annoy is strong.
+  #- mnd              # The annoy is strong.
   #- nakedret         # Naked return good return.
   #- nlreturn         # Could be nice in the future.
   #- nonamedreturns   # Named return good return.
   #- paralleltest     # Could be nice in the future.
+  #- recvcheck        # Not that useful/false positives.
   #- tagliatelle      # Reports issues that are not right for us.
   #- testpackage      # Could be nice in the future.
   #- tparallel        # Could be nice in the future.
@@ -49,6 +50,7 @@ linters:
   - errchkjson
   - errname
   - errorlint
+  - exptostd
   - fatcontext
   - forbidigo
   - ginkgolinter
@@ -81,6 +83,7 @@ linters:
   - musttag
   - nestif
   - nilerr
+  - nilnesserr
   - nilnil
   - noctx
   - nolintlint
@@ -99,13 +102,13 @@ linters:
   - staticcheck
   - stylecheck
   - tagalign
-  - tenv
   - testableexamples
   - testifylint
   - thelper
   - typecheck
   - unconvert
   - unused
+  - usetesting
   - usestdlibvars
   - wastedassign
   - whitespace
