@@ -9,13 +9,9 @@ import (
 
 func TestPathMissingDest(t *testing.T) {
 	t.Parallel()
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 	src := filepath.Join(dir, "source")
-	err = os.WriteFile(src, []byte("hi!"), 0o644)
+	err := os.WriteFile(src, []byte("hi!"), 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,13 +27,9 @@ func TestPathMissingDest(t *testing.T) {
 
 func TestPathMissingSource(t *testing.T) {
 	t.Parallel()
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 	dst := filepath.Join(dir, "dst")
-	err = os.WriteFile(dst, []byte("hi!"), 0o644)
+	err := os.WriteFile(dst, []byte("hi!"), 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,13 +42,9 @@ func TestPathMissingSource(t *testing.T) {
 
 func TestGlobEmptyGlob(t *testing.T) {
 	t.Parallel()
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 	dst := filepath.Join(dir, "dst")
-	err = os.WriteFile(dst, []byte("hi!"), 0o644)
+	err := os.WriteFile(dst, []byte("hi!"), 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,13 +57,9 @@ func TestGlobEmptyGlob(t *testing.T) {
 
 func TestDirMissingSrc(t *testing.T) {
 	t.Parallel()
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 	dst := filepath.Join(dir, "dst")
-	err = os.WriteFile(dst, []byte("hi!"), 0o644)
+	err := os.WriteFile(dst, []byte("hi!"), 0o644)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,13 +72,9 @@ func TestDirMissingSrc(t *testing.T) {
 
 func TestDirMissingDest(t *testing.T) {
 	t.Parallel()
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
+	dir := t.TempDir()
 	src := filepath.Join(dir, "source")
-	err = os.Mkdir(src, 0o755)
+	err := os.Mkdir(src, 0o755)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,15 +94,8 @@ func TestDirMissingDest(t *testing.T) {
 }
 
 func TestGlob(t *testing.T) {
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		os.RemoveAll(dir)
-	})
-
-	err = os.MkdirAll(filepath.Join(dir, filepath.FromSlash("dir/dir2")), 0o777)
+	dir := t.TempDir()
+	err := os.MkdirAll(filepath.Join(dir, filepath.FromSlash("dir/dir2")), 0o777)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -212,15 +185,8 @@ func TestGlob(t *testing.T) {
 }
 
 func TestPath(t *testing.T) {
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		os.RemoveAll(dir)
-	})
-
-	err = os.MkdirAll(filepath.Join(dir, filepath.FromSlash("dir/dir2")), 0o777)
+	dir := t.TempDir()
+	err := os.MkdirAll(filepath.Join(dir, filepath.FromSlash("dir/dir2")), 0o777)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -322,15 +288,8 @@ func TestPath(t *testing.T) {
 }
 
 func TestDir(t *testing.T) {
-	dir, err := os.MkdirTemp("", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		os.RemoveAll(dir)
-	})
-
-	err = os.MkdirAll(filepath.Join(dir, filepath.FromSlash("dir/dir2")), 0o777)
+	dir := t.TempDir()
+	err := os.MkdirAll(filepath.Join(dir, filepath.FromSlash("dir/dir2")), 0o777)
 	if err != nil {
 		t.Fatal(err)
 	}
