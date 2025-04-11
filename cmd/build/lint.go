@@ -39,3 +39,7 @@ func (Lint) glciCheck() error {
 		"./...", "./kubeutils/...", "./modules/kind/...", "./modules/kubeclients/...", "./modules/oci/...",
 	)
 }
+
+func (Lint) goWorkSync() error {
+	return shr.Run("go", "work", "sync")
+}
