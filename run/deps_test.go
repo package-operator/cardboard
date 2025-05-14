@@ -1,6 +1,7 @@
 package run
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -14,7 +15,7 @@ func Test_newDependencyRun_Serial(t *testing.T) {
 	t.Run("returns error", func(t *testing.T) {
 		t.Parallel()
 		dr := newDependencyRun()
-		ctx := t.Context()
+		ctx := context.Background()
 		err := dr.Serial(ctx,
 			DependencyID("_test"),
 			Fn(func() error { return errTest }),
@@ -29,7 +30,7 @@ func Test_newDependencyRun_Serial(t *testing.T) {
 		t.Parallel()
 		dr := newDependencyRun()
 		m := MyTestType{}
-		ctx := t.Context()
+		ctx := context.Background()
 		err := dr.Serial(ctx,
 			DependencyID("_test"),
 			Fn(myFunc),
@@ -47,7 +48,7 @@ func Test_newDependencyRun_Serial(t *testing.T) {
 		t.Parallel()
 		dr := newDependencyRun()
 		m := MyTestTypeErr{}
-		ctx := t.Context()
+		ctx := context.Background()
 		err := dr.Serial(ctx,
 			DependencyID("_test"),
 			Fn(myFuncErr),
@@ -65,7 +66,7 @@ func Test_newDependencyRun_Serial(t *testing.T) {
 		t.Parallel()
 		dr := newDependencyRun()
 		m := MyTestTypeCtxErr{}
-		ctx := t.Context()
+		ctx := context.Background()
 		err := dr.Serial(ctx,
 			DependencyID("_test"),
 			Fn(myFuncCtxErr),
@@ -83,7 +84,7 @@ func Test_newDependencyRun_Serial(t *testing.T) {
 		t.Parallel()
 		dr := newDependencyRun()
 		m := MyTestTypeCtx{}
-		ctx := t.Context()
+		ctx := context.Background()
 		err := dr.Serial(ctx,
 			DependencyID("_test"),
 			Fn(myFuncCtx),
@@ -109,7 +110,7 @@ func Test_newDependencyRun_Parallel(t *testing.T) {
 	t.Run("returns errors", func(t *testing.T) {
 		t.Parallel()
 		dr := newDependencyRun()
-		ctx := t.Context()
+		ctx := context.Background()
 		err := dr.Parallel(ctx,
 			DependencyID("_test"),
 			Fn(func() error { return errTest }),
@@ -133,7 +134,7 @@ func Test_newDependencyRun_Parallel(t *testing.T) {
 		t.Parallel()
 		dr := newDependencyRun()
 		m := MyTestType{}
-		ctx := t.Context()
+		ctx := context.Background()
 		err := dr.Parallel(ctx,
 			DependencyID("_test"),
 			Fn(myFunc),
@@ -151,7 +152,7 @@ func Test_newDependencyRun_Parallel(t *testing.T) {
 		t.Parallel()
 		dr := newDependencyRun()
 		m := MyTestTypeErr{}
-		ctx := t.Context()
+		ctx := context.Background()
 		err := dr.Parallel(ctx,
 			DependencyID("_test"),
 			Fn(myFuncErr),
@@ -169,7 +170,7 @@ func Test_newDependencyRun_Parallel(t *testing.T) {
 		t.Parallel()
 		dr := newDependencyRun()
 		m := MyTestTypeCtxErr{}
-		ctx := t.Context()
+		ctx := context.Background()
 		err := dr.Parallel(ctx,
 			DependencyID("_test"),
 			Fn(myFuncCtxErr),
@@ -187,7 +188,7 @@ func Test_newDependencyRun_Parallel(t *testing.T) {
 		t.Parallel()
 		dr := newDependencyRun()
 		m := MyTestTypeCtx{}
-		ctx := t.Context()
+		ctx := context.Background()
 		err := dr.Parallel(ctx,
 			DependencyID("_test"),
 			Fn(myFuncCtx),
@@ -204,7 +205,7 @@ func Test_newDependencyRun_Parallel(t *testing.T) {
 	t.Run("context func", func(t *testing.T) {
 		t.Parallel()
 		dr := newDependencyRun()
-		ctx := t.Context()
+		ctx := context.Background()
 		err := dr.Parallel(ctx,
 			Fn1(test1, "a"),
 			Fn(myFuncCtx),

@@ -78,7 +78,7 @@ func TestManager_Call_unknownTarget(t *testing.T) {
 	log := slogt.New(t)
 	mgr := New(WithLogger{log})
 
-	ctx := t.Context()
+	ctx := context.Background()
 	err := mgr.Call(ctx, "Test:Banana", []string{})
 	require.EqualError(t, err, `unknown target: "Test:Banana"`)
 	var unknownTargetErr *UnknownTargetError
@@ -90,7 +90,7 @@ func TestManager_Call(t *testing.T) {
 	mgr := New(WithLogger{log})
 	require.NoError(t, mgr.Register(&MyThing{}))
 
-	ctx := t.Context()
+	ctx := context.Background()
 	err := mgr.Call(ctx, "MyThing:Test123", []string{})
 	require.NoError(t, err)
 }
@@ -100,7 +100,7 @@ func TestManager_Call_panics(t *testing.T) {
 	mgr := New(WithLogger{log})
 	require.NoError(t, mgr.Register(&MyThing{}))
 
-	ctx := t.Context()
+	ctx := context.Background()
 	err := mgr.Call(ctx, "MyThing:TestPanic", []string{})
 	require.Error(t, err)
 }
@@ -115,7 +115,7 @@ func TestManager_Run(t *testing.T) {
 	require.NoError(t, mgr.Register(&MyThing{field: "hans", mgr: mgr}))
 
 	os.Args = []string{"", "MyThing:TestWithDep"}
-	ctx := t.Context()
+	ctx := context.Background()
 	require.NoError(t, mgr.Run(ctx))
 
 	assert.Equal(t, ``, stdoutBuf.String())
@@ -137,7 +137,7 @@ func TestManager_Run_Error(t *testing.T) {
 	require.NoError(t, mgr.Register(&MyThing{field: "hans", mgr: mgr}))
 
 	os.Args = []string{"", "MyThing:TestWithDepErr"}
-	ctx := t.Context()
+	ctx := context.Background()
 	require.EqualError(t, mgr.Run(ctx),
 		`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.TestWithDepErr([]string{}): `+
 			`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.privateErr("banana"): explosion`)
@@ -162,7 +162,7 @@ func TestManager_Run_MustPanic(t *testing.T) {
 	require.NoError(t, mgr.Register(&MyThing{field: "hans", mgr: mgr}))
 
 	os.Args = []string{"", "MyThing:TestWithDepMustPanic"}
-	ctx := t.Context()
+	ctx := context.Background()
 	require.EqualError(t, mgr.Run(ctx),
 		`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.TestWithDepMustPanic([]string{}): `+
 			`running pkg.package-operator.run/cardboard/run.MyThing{field:hans}.privateMustPanic("banana"): explosion`)
@@ -187,7 +187,7 @@ func TestManager_Run_help_withoutSource(t *testing.T) {
 	require.NoError(t, mgr.Register(&MyThing{field: "hans", mgr: mgr}))
 
 	os.Args = []string{"", "help"}
-	ctx := t.Context()
+	ctx := context.Background()
 	require.NoError(t, mgr.Run(ctx))
 
 	assert.Equal(t, ``, stderrBuf.String())
@@ -218,7 +218,7 @@ func TestManager_Run_help_withSource(t *testing.T) {
 	require.NoError(t, mgr.Register(&MyThing{field: "hans", mgr: mgr}))
 
 	os.Args = []string{"", "help"}
-	ctx := t.Context()
+	ctx := context.Background()
 	require.NoError(t, mgr.Run(ctx))
 
 	assert.Equal(t, ``, stderrBuf.String())
