@@ -1,6 +1,6 @@
 module pkg.package-operator.run/cardboard
 
-go 1.24.0
+go 1.23.6
 
 replace (
 	pkg.package-operator.run/cardboard/kubeutils => ./kubeutils
