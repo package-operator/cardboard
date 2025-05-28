@@ -3,7 +3,7 @@ module pkg.package-operator.run/cardboard/kubeutils
 go 1.23.6
 
 require (
-	github.com/go-logr/logr v1.4.2
+	github.com/go-logr/logr v1.4.3
 	github.com/stretchr/testify v1.10.0
 	k8s.io/api v0.32.4
 	k8s.io/apimachinery v0.32.4
