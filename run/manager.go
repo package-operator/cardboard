@@ -320,9 +320,9 @@ func (m *Manager) registerMeth(
 
 	// check params
 	if method.Type.NumIn() != 3 || method.Type.NumOut() != 1 ||
-		!(method.Type.In(1).String() == "context.Context") ||
-		!(method.Type.In(2).String() == "[]string") ||
-		!(method.Type.Out(0).String() == "error") {
+		(method.Type.In(1).String() != "context.Context") ||
+		(method.Type.In(2).String() != "[]string") ||
+		(method.Type.Out(0).String() != "error") {
 		return fmt.Errorf(
 			"%s.%s() must have signature like func(context.Context, []string) error",
 			typeID, method.Name)
