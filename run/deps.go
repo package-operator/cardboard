@@ -23,8 +23,7 @@ type Dependency interface {
 }
 
 // A depdencency that can uniquely identify itself.
-// nolint: iface
-type DependencyIDer interface {
+type DependencyIDer interface { //nolint: iface
 	// Unique Identifier to ensure this dependency only executes once.
 	ID() string
 }
@@ -426,8 +425,7 @@ func Fn6WithName[T fn6[A, B, C, D, E, F], A, B, C, D, E, F any](
 	}
 }
 
-// nolint: iface
-type selfIdentifier interface {
+type selfIdentifier interface { //nolint: iface
 	ID() string
 }
 
