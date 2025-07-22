@@ -63,7 +63,7 @@ type Option interface {
 
 // Waiter implements functions to block till kube objects are in a certain state.
 type Waiter struct {
-	client client.Client
+	client client.Reader
 	scheme *runtime.Scheme
 	config WaiterConfig
 }
@@ -72,7 +72,7 @@ type TypeWaitFn func(ctx context.Context, w *Waiter, object client.Object, opts 
 
 // Creates a new Waiter instance.
 func NewWaiter(
-	client client.Client, scheme *runtime.Scheme,
+	client client.Reader, scheme *runtime.Scheme,
 	defaultOpts ...Option,
 ) *Waiter {
 	w := &Waiter{
