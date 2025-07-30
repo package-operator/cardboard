@@ -1,6 +1,6 @@
 module pkg.package-operator.run/cardboard/modules/kubeclients
 
-go 1.23.6
+go 1.24.4
 
 replace (
 	pkg.package-operator.run/cardboard => ../../
