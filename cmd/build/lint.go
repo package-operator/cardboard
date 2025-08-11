@@ -10,12 +10,12 @@ import (
 // internal struct to namespace all lint related functions.
 type Lint struct{}
 
-func (l Lint) Fix() error   { return l.glciFix() }
-func (l Lint) Check() error { return l.glciCheck() }
+func (l Lint) Fix(ctx context.Context) error   { return l.glciFix(ctx) }
+func (l Lint) Check(ctx context.Context) error { return l.glciCheck(ctx) }
 
 // TODO make that more nice.
-func (l Lint) goModTidy(workdir string) error {
-	return shr.New(sh.WithWorkDir(workdir)).Run("go", "mod", "tidy")
+func (l Lint) goModTidy(ctx context.Context, workdir string) error {
+	return shr.New(sh.WithWorkDir(workdir)).Run(ctx, "go", "mod", "tidy")
 }
 
 func (l Lint) goModTidyAll(ctx context.Context) error {
@@ -28,18 +28,18 @@ func (l Lint) goModTidyAll(ctx context.Context) error {
 	)
 }
 
-func (Lint) glciFix() error {
-	return shr.Run("golangci-lint", "run", "--timeout", "2m", "--fix",
+func (Lint) glciFix(ctx context.Context) error {
+	return shr.Run(ctx, "golangci-lint", "run", "--timeout", "2m", "--fix",
 		"./...", "./kubeutils/...", "./modules/kind/...", "./modules/kubeclients/...", "./modules/oci/...",
 	)
 }
 
-func (Lint) glciCheck() error {
-	return shr.Run("golangci-lint", "run", "--timeout", "2m",
+func (Lint) glciCheck(ctx context.Context) error {
+	return shr.Run(ctx, "golangci-lint", "run", "--timeout", "2m",
 		"./...", "./kubeutils/...", "./modules/kind/...", "./modules/kubeclients/...", "./modules/oci/...",
 	)
 }
 
-func (Lint) goWorkSync() error {
-	return shr.Run("go", "work", "sync")
+func (Lint) goWorkSync(ctx context.Context) error {
+	return shr.Run(ctx, "go", "work", "sync")
 }

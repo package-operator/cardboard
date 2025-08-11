@@ -156,8 +156,8 @@ func (m *Manager) Run(ctx context.Context) error {
 
 // Register a go tool to be installed.
 // The manager ensures that the tool is go install'ed project local and available in $PATH.
-func (m *Manager) RegisterGoTool(tool, packageURL, version string) error {
-	return m.dm.Register(tool, packageURL, version)
+func (m *Manager) RegisterGoTool(ctx context.Context, tool, packageURL, version string) error {
+	return m.dm.Register(ctx, tool, packageURL, version)
 }
 
 func (m *Manager) RegisterAndRun(ctx context.Context, targetGroups ...any) error {
@@ -173,11 +173,11 @@ func (m *Manager) RegisterAndRun(ctx context.Context, targetGroups ...any) error
 
 func (m *Manager) MustRegisterAndRun(ctx context.Context, targetGroups ...any) {
 	if err := m.registerAll(targetGroups...); err != nil {
-		m.logger.Error((decorateWithCallingSourceLine(err)).Error())
+		m.logger.ErrorContext(ctx, (decorateWithCallingSourceLine(err)).Error())
 		os.Exit(1)
 	}
 	if err := m.Run(ctx); err != nil {
-		m.logger.Error(err.Error())
+		m.logger.ErrorContext(ctx, err.Error())
 		os.Exit(1)
 	}
 }
