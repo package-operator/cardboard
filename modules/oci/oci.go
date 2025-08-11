@@ -9,7 +9,7 @@ import (
 )
 
 type shRunner interface {
-	Run(cmd string, args ...string) error
+	Run(ctx context.Context, cmd string, args ...string) error
 }
 
 const (
@@ -55,12 +55,12 @@ func NewOCI(tag, workDir string, opts ...Option) *OCI {
 	return oci
 }
 
-func (oci *OCI) Load(path string) error {
+func (oci *OCI) Load(ctx context.Context, path string) error {
 	cr, err := kubeutils.ContainerRuntimeOrDetect(oci.containerRuntime)
 	if err != nil {
 		return err
 	}
-	return sh.New().Run(string(cr), "load", "-i", path)
+	return sh.New().Run(ctx, string(cr), "load", "-i", path)
 }
 
 func (oci *OCI) ID() string {
@@ -68,12 +68,12 @@ func (oci *OCI) ID() string {
 }
 
 // Returns a Build dependency.
-func (oci *OCI) Run(_ context.Context) error {
-	return oci.Build()
+func (oci *OCI) Run(ctx context.Context) error {
+	return oci.Build(ctx)
 }
 
 // Build the image.
-func (oci *OCI) Build() error {
+func (oci *OCI) Build(ctx context.Context) error {
 	cr, err := kubeutils.ContainerRuntimeOrDetect(oci.containerRuntime)
 	if err != nil {
 		return err
@@ -86,7 +86,7 @@ func (oci *OCI) Build() error {
 		buildCmdArgs = append(buildCmdArgs, "-f", oci.containerFile)
 	}
 	buildCmdArgs = append(buildCmdArgs, oci.workDir)
-	if err := oci.runner.Run(string(cr), buildCmdArgs...); err != nil {
+	if err := oci.runner.Run(ctx, string(cr), buildCmdArgs...); err != nil {
 		return err
 	}
 
@@ -94,30 +94,30 @@ func (oci *OCI) Build() error {
 		"image", "save",
 		"-o", ociTarFilename, oci.tag,
 	}
-	if err := oci.runner.Run(string(cr), imgSaveArgs...); err != nil {
+	if err := oci.runner.Run(ctx, string(cr), imgSaveArgs...); err != nil {
 		return err
 	}
 	return nil
 }
 
 // Push the image.
-func (oci *OCI) Push() error {
+func (oci *OCI) Push(ctx context.Context) error {
 	if oci.cranePush {
-		return oci.pushWithCrane()
+		return oci.pushWithCrane(ctx)
 	}
-	return oci.pushWithCR()
+	return oci.pushWithCR(ctx)
 }
 
-func (oci *OCI) pushWithCrane() error {
+func (oci *OCI) pushWithCrane(ctx context.Context) error {
 	args := []string{"push", ociTarFilename, oci.tag}
-	if err := oci.runner.Run("crane", args...); err != nil {
+	if err := oci.runner.Run(ctx, "crane", args...); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (oci *OCI) pushWithCR() error {
+func (oci *OCI) pushWithCR(ctx context.Context) error {
 	cr, err := kubeutils.ContainerRuntimeOrDetect(oci.containerRuntime)
 	if err != nil {
 		return err
@@ -128,7 +128,7 @@ func (oci *OCI) pushWithCR() error {
 		args = append(args, "--digestfile="+ociDigestFile)
 	}
 	args = append(args, oci.tag)
-	if err := oci.runner.Run(string(cr), args...); err != nil {
+	if err := oci.runner.Run(ctx, string(cr), args...); err != nil {
 		return err
 	}
 

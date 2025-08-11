@@ -34,8 +34,8 @@ func main() {
 	lint = &Lint{}
 
 	err := errors.Join(
-		mgr.RegisterGoTool("gotestfmt", "github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt", "2.5.0"),
-		mgr.RegisterGoTool("golangci-lint", "github.com/golangci/golangci-lint/v2/cmd/golangci-lint", "2.1.6"),
+		mgr.RegisterGoTool(ctx, "gotestfmt", "github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt", "2.5.0"),
+		mgr.RegisterGoTool(ctx, "golangci-lint", "github.com/golangci/golangci-lint/v2/cmd/golangci-lint", "2.3.1"),
 		mgr.Register(&Dev{}, &CI{}),
 	)
 	if err != nil {
@@ -62,8 +62,8 @@ func (ci *CI) Unit(ctx context.Context, args []string) error {
 }
 
 // Runs linters in CI to check the codebase.
-func (ci *CI) Lint(_ context.Context, _ []string) error {
-	return lint.Check()
+func (ci *CI) Lint(ctx context.Context, _ []string) error {
+	return lint.Check(ctx)
 }
 
 func (ci *CI) PostPush(ctx context.Context, args []string) error {
@@ -77,7 +77,7 @@ func (ci *CI) PostPush(ctx context.Context, args []string) error {
 		return err
 	}
 
-	return shr.Run("git", "diff", "--exit-code")
+	return shr.Run(ctx, "git", "diff", "--exit-code")
 }
 
 // Development focused commands using local development environment.
@@ -89,8 +89,8 @@ func (d *Dev) Unit(ctx context.Context, args []string) error {
 }
 
 // Runs local linters to check the codebase.
-func (d *Dev) Lint(_ context.Context, _ []string) error {
-	return lint.Check()
+func (d *Dev) Lint(ctx context.Context, _ []string) error {
+	return lint.Check(ctx)
 }
 
 // Runs linters and code-gens for pre-commit.
@@ -104,8 +104,8 @@ func (d *Dev) PreCommit(ctx context.Context, args []string) error {
 }
 
 // Tries to fix linter issues.
-func (d *Dev) LintFix(_ context.Context, _ []string) error {
-	return lint.Fix()
+func (d *Dev) LintFix(ctx context.Context, _ []string) error {
+	return lint.Fix(ctx)
 }
 
 // common unittest target shared by CI and Dev.

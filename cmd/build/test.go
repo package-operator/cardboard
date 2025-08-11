@@ -13,7 +13,7 @@ import (
 type Test struct{}
 
 // Run unittests, the filter argument is passed via -run="".
-func (t Test) Unit(_ context.Context, filter string) error {
+func (t Test) Unit(ctx context.Context, filter string) error {
 	if err := os.MkdirAll(".cache/unit", 0o755); err != nil {
 		return err
 	}
@@ -28,6 +28,7 @@ func (t Test) Unit(_ context.Context, filter string) error {
 	return sh.New(
 		sh.WithEnvironment{"CGO_ENABLED": "1"},
 	).Bash(
+		ctx,
 		"set -euo pipefail",
 		fmt.Sprintf("go test %s ./... 2>&1 | tee .cache/unit/gotest.log | gotestfmt --hide=all", argStr),
 	)

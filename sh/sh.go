@@ -3,6 +3,7 @@ package sh
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -70,7 +71,7 @@ func (t taskWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (r *Runner) Run(cmd string, args ...string) error {
+func (r *Runner) Run(ctx context.Context, cmd string, args ...string) error {
 	stdout := outOrStdoutIfNil(r.stdout)
 	stderr := outOrStderrIfNil(r.stderr)
 
@@ -79,12 +80,13 @@ func (r *Runner) Run(cmd string, args ...string) error {
 		stderr = taskWriter{stderr, cmd, "ERR"}
 	}
 
-	return r.run(stdout, stderr, nil, cmd, args...)
+	return r.run(ctx, stdout, stderr, nil, cmd, args...)
 }
 
-func (r *Runner) Bash(script ...string) error {
+func (r *Runner) Bash(ctx context.Context, script ...string) error {
 	scriptBuf := bytes.NewBufferString(strings.Join(script, "\n"))
 	if err := r.run(
+		ctx,
 		outOrStdoutIfNil(r.stdout),
 		outOrStderrIfNil(r.stderr),
 		scriptBuf,
@@ -95,9 +97,9 @@ func (r *Runner) Bash(script ...string) error {
 	return nil
 }
 
-func (r *Runner) Output(cmd string, args ...string) (string, error) {
+func (r *Runner) Output(ctx context.Context, cmd string, args ...string) (string, error) {
 	var out bytes.Buffer
-	err := r.run(&out, outOrStderrIfNil(r.stderr), nil, cmd, args...)
+	err := r.run(ctx, &out, outOrStderrIfNil(r.stderr), nil, cmd, args...)
 	return strings.TrimRight(out.String(), "\n"), err
 }
 
@@ -115,8 +117,8 @@ func (r *Runner) Copy(dst, src string) error {
 	return os.WriteFile(dst, data, info.Mode().Perm())
 }
 
-func (r *Runner) run(stdout, stderr io.Writer, stdin io.Reader, cmd string, args ...string) error {
-	c := exec.Command(cmd, args...)
+func (r *Runner) run(ctx context.Context, stdout, stderr io.Writer, stdin io.Reader, cmd string, args ...string) error {
+	c := exec.CommandContext(ctx, cmd, args...)
 	c.Env = os.Environ()
 	for k, v := range r.env {
 		c.Env = append(c.Env, k+"="+v)
@@ -133,7 +135,7 @@ func (r *Runner) run(stdout, stderr io.Writer, stdin io.Reader, cmd string, args
 	c.Dir = r.workDir
 
 	if r.logger != nil {
-		r.logger.Info("exec", slog.String("cmd", cmd), slog.String("args", strings.Join(args, ", ")))
+		r.logger.InfoContext(ctx, "exec", slog.String("cmd", cmd), slog.String("args", strings.Join(args, ", ")))
 	}
 
 	err := c.Run()

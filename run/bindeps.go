@@ -59,14 +59,14 @@ func (d *dependencyManager) Bin() string {
 }
 
 // Register a new dependency to be installed.
-func (d *dependencyManager) Register(tool, packageURL, version string) error {
+func (d *dependencyManager) Register(ctx context.Context, tool, packageURL, version string) error {
 	newURL := depURL(packageURL, version)
 	if url, ok := d.deps[tool]; ok && newURL != url {
 		return fmt.Errorf("conflicting dependency for %s, already have: %s", tool, url)
 	}
 
 	installFn := func() error {
-		return d.goInstall(tool, packageURL, version)
+		return d.goInstall(ctx, tool, packageURL, version)
 	}
 
 	d.deps[tool] = newURL
@@ -75,7 +75,7 @@ func (d *dependencyManager) Register(tool, packageURL, version string) error {
 }
 
 // go install a dependency into the dependency directory.
-func (d *dependencyManager) goInstall(tool, packageURL, version string) error {
+func (d *dependencyManager) goInstall(ctx context.Context, tool, packageURL, version string) error {
 	if err := os.MkdirAll(d.path, os.ModePerm); err != nil {
 		return fmt.Errorf("create dependency dir: %w", err)
 	}
@@ -89,7 +89,7 @@ func (d *dependencyManager) goInstall(tool, packageURL, version string) error {
 	}
 
 	url := packageURL + "@v" + version
-	if err := d.runner.Run("go", "install", url); err != nil {
+	if err := d.runner.Run(ctx, "go", "install", url); err != nil {
 		return fmt.Errorf("install %s: %w", url, err)
 	}
 	return nil
