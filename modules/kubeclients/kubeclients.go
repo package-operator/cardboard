@@ -30,6 +30,7 @@ type KubeClients struct {
 	RestConfig *rest.Config
 	CtrlClient client.Client
 	Waiter     *wait.Waiter
+	fieldOwner *string
 
 	schemeBuilder  runtime.SchemeBuilder
 	kubeconfigPath string
@@ -48,6 +49,13 @@ type WithSchemeBuilder []func(*runtime.Scheme) error
 
 func (sb WithSchemeBuilder) ApplyToKubeClients(kc *KubeClients) {
 	kc.schemeBuilder = runtime.SchemeBuilder(sb)
+}
+
+type WithFieldManager string
+
+func (fm WithFieldManager) ApplyToKubeClients(kc *KubeClients) {
+	fieldManager := string(fm)
+	kc.fieldOwner = &fieldManager
 }
 
 type Option interface {
@@ -195,6 +203,39 @@ func (kc *KubeClients) CreateAndWaitForReadiness(
 		!apimachineryerrors.IsAlreadyExists(err) {
 		gvk := object.GetObjectKind().GroupVersionKind()
 		return fmt.Errorf("creating object: %s/%s/%s %s/%s: %w",
+			gvk.Group,
+			gvk.Version,
+			gvk.Kind,
+			object.GetNamespace(), object.GetName(), err)
+	}
+
+	if err := kc.Waiter.WaitForReadiness(ctx, object, opts...); err != nil {
+		var unknownTypeErr *wait.UnknownTypeError
+		if errors.As(err, &unknownTypeErr) {
+			// A lot of types don't require waiting for readiness,
+			// so we should not error in cases when object types
+			// are not registered for the generic wait method.
+			return nil
+		}
+
+		return fmt.Errorf("waiting for object: %w", err)
+	}
+	return nil
+}
+
+// Server side applies the given object and waits for it to be considered ready.
+// Use *unstructured.Unstructured objects to avoid setting unspecified fields to their defaulted go value. Ie. not setting .spec.replicas will result in .spec.replicas being defaulted to 0 before serialization.
+func (kc *KubeClients) ApplyAndWaitForReadiness(
+	ctx context.Context, object client.Object,
+	opts ...wait.Option,
+) error {
+	if kc.fieldOwner == nil {
+		return FieldOwnerNotSetError
+	}
+
+	if err := kc.CtrlClient.Patch(ctx, object, client.Apply, client.FieldOwner(*kc.fieldOwner), client.ForceOwnership); err != nil {
+		gvk := object.GetObjectKind().GroupVersionKind()
+		return fmt.Errorf("applying object: %s/%s/%s %s/%s: %w",
 			gvk.Group,
 			gvk.Version,
 			gvk.Kind,
