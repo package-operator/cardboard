@@ -1,6 +1,6 @@
 module pkg.package-operator.run/cardboard/kubeutils
 
-go 1.24.6
+go 1.25
 
 require (
 	github.com/go-logr/logr v1.4.3
