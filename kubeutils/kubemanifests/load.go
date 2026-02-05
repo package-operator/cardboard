@@ -67,7 +67,6 @@ func LoadKubernetesObjectsFromBytes(fileYaml []byte) ([]unstructured.Unstructure
 	// Trim empty starting and ending objects
 	fileYaml = bytes.Trim(fileYaml, "-\n")
 
-	//nolint:prealloc // Can't prealloc here.
 	var objects []unstructured.Unstructured
 	// Split for every included yaml document.
 	for i, yamlDocument := range splitYAMLDocumentsRegEx.Split(string(bytes.Trim(fileYaml, "---\n")), -1) {
