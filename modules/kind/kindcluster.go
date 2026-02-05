@@ -152,7 +152,7 @@ func (c *Cluster) Create(ctx context.Context) error {
 		cluster.CreateWithDisplayUsage(true),
 		cluster.CreateWithDisplaySalutation(true),
 		cluster.CreateWithWaitForReady(5*time.Minute),
-		cluster.CreateWithRetain(false),
+		cluster.CreateWithRetain(true),
 	); err != nil {
 		return fmt.Errorf("failed to create the cluster: %w", err)
 	}
