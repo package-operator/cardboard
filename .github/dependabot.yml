@@ -19,9 +19,13 @@ updates:
       patterns:
       - k8s.io/*
     golangx:
-        applies-to: version-updates
-        patterns:
-          - golang.org/x/*
+      applies-to: version-updates
+      patterns:
+      - golang.org/x/*
+    openapi:
+      applies-to: version-updates
+      patterns:
+      - github.com/go-openapi/*
   commit-message:
     prefix: "build(deps)"
 - package-ecosystem: github-actions
