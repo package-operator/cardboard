@@ -114,7 +114,7 @@ func (r *Runner) Copy(dst, src string) error {
 		return err
 	}
 
-	return os.WriteFile(dst, data, info.Mode().Perm())
+	return os.WriteFile(dst, data, info.Mode().Perm()) //nolint:gosec // Traversal allowed here.
 }
 
 func (r *Runner) run(ctx context.Context, stdout, stderr io.Writer, stdin io.Reader, cmd string, args ...string) error {
