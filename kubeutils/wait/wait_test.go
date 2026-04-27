@@ -99,12 +99,12 @@ func Test_checkObjectCondition(t *testing.T) {
 		{
 			name: "outdated unstructured",
 			object: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"metadata": map[string]interface{}{
+				Object: map[string]any{
+					"metadata": map[string]any{
 						"generation": int64(5),
 					},
-					"status": map[string]interface{}{
-						"conditions": []map[string]interface{}{
+					"status": map[string]any{
+						"conditions": []map[string]any{
 							{
 								"type":               "Available",
 								"observedGeneration": 3,
@@ -118,12 +118,12 @@ func Test_checkObjectCondition(t *testing.T) {
 		{
 			name: "up-to-date unstructured",
 			object: &unstructured.Unstructured{
-				Object: map[string]interface{}{
-					"metadata": map[string]interface{}{
+				Object: map[string]any{
+					"metadata": map[string]any{
 						"generation": int64(5),
 					},
-					"status": map[string]interface{}{
-						"conditions": []map[string]interface{}{
+					"status": map[string]any{
+						"conditions": []map[string]any{
 							{
 								"type":               "Available",
 								"status":             "True",
