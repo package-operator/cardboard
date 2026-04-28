@@ -10,7 +10,7 @@ replace (
 )
 
 require (
-	github.com/mattn/go-isatty v0.0.21
+	github.com/mattn/go-isatty v0.0.22
 	github.com/neilotoole/slogt v1.1.0
 	github.com/stretchr/testify v1.11.1
 	github.com/xlab/treeprint v1.2.0
