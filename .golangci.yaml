@@ -3,6 +3,7 @@ linters:
   # One can't use disable and disable-all. disable-all is preferred to avoid lint failing when golangci gets updated and linters are added.
   # at the same time but it is nice to explicitly state which linters we do not want.
   #disable:
+  #- arangolint       # Not useful.
   #- containedctx     # Context.Context within a struct (as opposed to a func parameter) is nasty for many reasons, but actually sometimes useful.
   #- contextcheck     # Not that useful/false positives.
   #- cyclop           # Cyclo complexity already calculated by other linters.
@@ -17,6 +18,7 @@ linters:
   #- funlen           # We really like long functions.
   #- gochecknoglobals # We need globals.
   #- gochecknoinits   # We have a lot of those.
+  # -godoclint        # Not useful.
   #- gocognit         # Not that useful/false positives.
   #- godox            # Not that useful/false positives.
   #- gomoddirectives  # Not that useful/false positives.
@@ -26,6 +28,7 @@ linters:
   #- mnd              # The annoy is strong.
   #- nakedret         # Naked return good return.
   #- nlreturn         # Could be nice in the future.
+  #- noinlineerr      # Not useful.
   #- nonamedreturns   # Named return good return.
   #- paralleltest     # Could be nice in the future.
   #- recvcheck        # Not that useful/false positives.
@@ -33,9 +36,10 @@ linters:
   #- testpackage      # Could be nice in the future.
   #- tparallel        # Could be nice in the future.
   #- unparam          # Not that useful/false positives.
+  #- unqueryvet       # Not useful.
   #- varnamelen       # Not that useful/false positives.
   #- wrapcheck        # Not that useful/false positives.
-  #- wsl              # Not that useful/false positives.
+  #- wsl_v5           # Not that useful/false positives.
   default: none
   enable:
     - asasalint
@@ -47,6 +51,7 @@ linters:
     - decorder
     - dupword
     - durationcheck
+    - embeddedstructfieldcheck
     - errcheck
     - errchkjson
     - errname
@@ -69,6 +74,7 @@ linters:
     - govet
     - grouper
     - iface
+    - iotamixing
     - importas
     - ineffassign
     - intrange
@@ -78,6 +84,7 @@ linters:
     - makezero
     - mirror
     - misspell
+    - modernize
     - musttag
     - nestif
     - nilerr

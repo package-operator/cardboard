@@ -102,7 +102,7 @@ func (x fileInfosByName) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
 // that method would do. LoadAndUnmarshalIntoObject provides similar functionality, without the
 // conversion aspect. LoadAndUnmarshalIntoObject should only be used when there is no available
 // scheme or when the user wants to explicitly block any conversions.
-func LoadAndConvertIntoObject(scheme *runtime.Scheme, filePath string, out interface{}) error {
+func LoadAndConvertIntoObject(scheme *runtime.Scheme, filePath string, out any) error {
 	objs, err := LoadKubernetesObjectsFromFile(filePath)
 	if err != nil {
 		return fmt.Errorf("loading object from file: %w", err)
@@ -117,7 +117,7 @@ func LoadAndConvertIntoObject(scheme *runtime.Scheme, filePath string, out inter
 // LoadAndUnmarshalIntoObject provides similar functionality, but uses `runtime.Scheme.Convert`
 // under the hood. LoadAndUnmarshalIntoObject should only be used when there is no available
 // scheme or when the user wants to explicitly block any conversions.
-func LoadAndUnmarshalIntoObject(filePath string, out interface{}) error {
+func LoadAndUnmarshalIntoObject(filePath string, out any) error {
 	obj, err := os.ReadFile(filePath)
 	if err != nil {
 		return fmt.Errorf("reading file: %w", err)

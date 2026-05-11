@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 
 	kindv1alpha4 "sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
@@ -92,10 +93,8 @@ func (c *Cluster) Exists() (bool, error) {
 		return false, fmt.Errorf("failed to fetch the existing KinD clusters: %w", err)
 	}
 
-	for _, cluster := range existingClusters {
-		if c.name == cluster {
-			return true, nil
-		}
+	if slices.Contains(existingClusters, c.name) {
+		return true, nil
 	}
 	return false, nil
 }

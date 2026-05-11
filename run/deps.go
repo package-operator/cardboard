@@ -439,9 +439,9 @@ func methID(thing, fn any, args ...any) string {
 		fid = fid[idx+2:]
 	} else {
 		sidSlice := sid
-		sIdx := strings.Index(sid, "{")
-		if sIdx >= 0 {
-			sidSlice = sid[:sIdx]
+		before, _, ok := strings.Cut(sid, "{")
+		if ok {
+			sidSlice = before
 		}
 		idx = strings.LastIndex(fid, sidSlice)
 		if idx >= 0 {
