@@ -18,6 +18,7 @@ linters:
   #- funlen           # We really like long functions.
   #- gochecknoglobals # We need globals.
   #- gochecknoinits   # We have a lot of those.
+  #- goconst          # I don't want to make "true" a constant.
   # -godoclint        # Not useful.
   #- gocognit         # Not that useful/false positives.
   #- godox            # Not that useful/false positives.
@@ -62,12 +63,11 @@ linters:
     - ginkgolinter
     - gocheckcompilerdirectives
     - gochecksumtype
-    - goconst
     - gocritic
     - gocyclo
     - godot
     - goheader
-    - gomodguard
+    - gomodguard_v2
     - goprintffuncname
     - gosec
     - gosmopolitan
